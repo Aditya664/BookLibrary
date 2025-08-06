@@ -1,6 +1,6 @@
 [build]
+  command = "npm install -g @ionic/cli && npm install && ionic build"
   publish = "www"
-  command = "ionic build"
 
 [[redirects]]
   from = "/*"
