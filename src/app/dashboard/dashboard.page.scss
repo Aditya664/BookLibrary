@@ -1,0 +1,237 @@
+.dashboard-content {
+  --background: #f9f9f9;
+
+  .user-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 25px 16px 10px;
+
+    ion-avatar img {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .welcome-text {
+      flex-grow: 1;
+      margin-left: 12px;
+
+      h2 {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin: 0;
+      }
+
+      p {
+        margin: 0;
+        font-size: 14px;
+        color: #666;
+      }
+    }
+
+    ion-icon {
+      font-size: 24px;
+      color: #333;
+    }
+  }
+
+  ion-searchbar {
+    padding: 0 16px;
+    --background: #f1f3f6;
+    --border-radius: 12px;
+    --box-shadow: none;
+    --color: #333;
+    --placeholder-color: #999;
+    margin-bottom: 10px;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px 0;
+
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    ion-button {
+      font-size: 14px;
+      color: #0b3d91;
+    }
+  }
+
+  .horizontal-scroll {
+    display: flex;
+    overflow-x: auto;
+    padding: 10px 16px;
+    gap: 16px;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .category-item {
+    flex: 0 0 auto;
+    width: 80px;
+    height: 80px;
+    background: #fff;
+    border-radius: 16px;
+    text-align: center;
+    padding: 10px 5px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    ion-icon {
+      font-size: 22px;
+      color: #0b3d91;
+      margin-bottom: 4px;
+    }
+
+    p {
+      font-size: 12px;
+      color: #333;
+      margin: 0;
+    }
+  }
+
+  ion-chip {
+    border-radius: 20px;
+    font-size: 13px;
+    padding: 0 12px;
+    height: 32px;
+    background: #fff;
+    border: 1px solid #ddd;
+    color: #333;
+  }
+
+  .book-card {
+    flex: 0 0 auto;
+    width: 130px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+    text-align: center;
+
+    img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    h4 {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0 0 4px;
+      color: #1a1a1a;
+    }
+
+    p {
+      font-size: 12px;
+      color: #666;
+      margin: 0;
+    }
+  }
+
+  ion-list {
+    padding: 0 16px;
+
+    ion-item {
+      --background: #fff;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+
+      ion-thumbnail img {
+        border-radius: 8px;
+      }
+
+      ion-label {
+        h3 {
+          font-size: 15px;
+          font-weight: 600;
+          color: #1a1a1a;
+        }
+
+        p {
+          font-size: 13px;
+          color: #666;
+        }
+      }
+    }
+  }
+
+  .continue-card {
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    border-radius: 16px;
+    padding: 12px;
+    margin: 10px 16px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+
+    img {
+      width: 80px;
+      height: 100px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    .continue-info {
+      flex: 1;
+      margin-left: 15px;
+
+      h4 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin: 0 0 6px;
+      }
+
+      p {
+        font-size: 14px;
+        color: #666;
+        margin: 0 0 8px;
+      }
+
+      ion-progress-bar {
+        height: 6px;
+        border-radius: 3px;
+      }
+    }
+  }
+}
+
+.language-chip {
+  scroll-snap-align: start;
+  --background: #f1f3f6;
+  --color: #0b3d91;
+  --border-color: #d0d8e0;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 20px;
+  padding: 31px;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    --background: #e1ecfa;
+    --border-color: #0b3d91;
+    transform: scale(1.05);
+    cursor: pointer;
+  }
+}
+

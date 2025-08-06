@@ -1,20 +1,39 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content class="ion-padding">
+  <div class="welcome">
+    <h2>Hello, Jelly!</h2>
+    <p>Which book suits your current mood?</p>
+  </div>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <ion-card class="continue-card">
+    <ion-card-content>
+      <p class="reminder">Remember, Jelly. You have an unfinished book since July 30, 2021</p>
+      <a class="continue-link">Continue reading</a>
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+      <div class="book-info">
+        <img src="assets/images/ther-melian.jpg" alt="Book Cover" />
+        <div>
+          <h3>Ther Melian: Discord</h3>
+          <p>Book 3 of 4</p>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-segment scrollable value="fantasy" class="genre-tabs">
+    <ion-segment-button value="fantasy">Fantasy</ion-segment-button>
+    <ion-segment-button value="romance">Romance</ion-segment-button>
+    <ion-segment-button value="mystery">Mystery & Drama</ion-segment-button>
+  </ion-segment>
+
+  <div class="book-list">
+    <ion-scroll scrollX>
+      <ion-card *ngFor="let book of books" class="book-card">
+        <img [src]="book.image" />
+        <ion-card-content>
+          <h4>{{ book.title }}</h4>
+          <p>{{ book.author }}</p>
+        </ion-card-content>
+      </ion-card>
+    </ion-scroll>
   </div>
 </ion-content>

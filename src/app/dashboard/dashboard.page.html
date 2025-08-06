@@ -1,0 +1,71 @@
+<ion-content class="dashboard-content">
+  <!-- Header -->
+  <div class="user-header ion-padding-horizontal ion-margin-top">
+    <ion-avatar>
+      <img src="https://dt2sdf0db8zob.cloudfront.net/wp-content/uploads/2019/12/9-Best-Online-Avatars-and-How-to-Make-Your-Own-for-Free-image21.jpg" />
+    </ion-avatar>
+    <div class="welcome-text">
+      <h2>Hello, {{ firstName }}!</h2>
+      <p>Discover your next great read</p>
+    </div>
+    <ion-icon name="notifications-outline" size="large"></ion-icon>
+  </div>
+
+  <!-- Search -->
+  <ion-searchbar placeholder="Search books, authors..." show-clear-button="focus"></ion-searchbar>
+
+  <!-- Categories -->
+  <div class="section-header">
+    <h3>Categories</h3>
+    <ion-button fill="clear" size="small">See all</ion-button>
+  </div>
+  <div class="horizontal-scroll">
+    <div class="category-item" *ngFor="let cat of categories">
+      <ion-icon [name]="cat.icon" size="large"></ion-icon>
+      <p>{{ cat.name }}</p>
+    </div>
+  </div>
+
+
+  <!-- Popular Books -->
+  <div class="section-header">
+    <h3>Popular Books</h3>
+    <ion-button fill="clear" size="small">See all</ion-button>
+  </div>
+  <div class="horizontal-scroll">
+    <div class="book-card" *ngFor="let book of popularBooks" (click)="openBook(book)">
+      <img [src]="book.image" />
+      <h4>{{ book.title }}</h4>
+      <p>{{ book.author }}</p>
+    </div>
+  </div>
+
+  <!-- Recently Added -->
+  <div class="section-header">
+    <h3>Recently Added</h3>
+  </div>
+  <ion-list>
+    <ion-item *ngFor="let book of recentBooks" (click)="openBook(book)"> 
+      <ion-thumbnail slot="start">
+        <img [src]="book.image" />
+      </ion-thumbnail>
+      <ion-label>
+        <h3>{{ book.title }}</h3>
+        <p>{{ book.author }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <!-- Continue Reading -->
+  <div class="section-header">
+    <h3>Continue Reading</h3>
+  </div>
+  <div class="continue-card ion-padding-horizontal" >
+    <img src="assets/littleprince.jpg" />
+    <div class="continue-info">
+      <h4>The Little Prince</h4>
+      <p>Antoine de Saint-Exupéry</p>
+      <ion-progress-bar value="0.75" color="primary"></ion-progress-bar>
+    </div>
+  </div>
+</ion-content>

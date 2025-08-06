@@ -1,0 +1,78 @@
+.login-page {
+  --background: #f9f9f9;
+
+  .login-container {
+    max-width: 400px;
+    margin: auto;
+    text-align: center;
+    padding: 20px 16px;
+  }
+
+  .illustration img {
+    width: 100%;
+    max-width: 250px;
+    margin: 20px auto 10px;
+  }
+
+  .main-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #1a1a1a;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 20px;
+  }
+
+  .input-field {
+    background: #f1f3f6;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    padding-inline: 10px;
+  }
+
+  ion-input {
+    padding: 10px 0;
+  }
+
+  .password-toggle {
+    cursor: pointer;
+    font-size: 20px;
+    color: #666;
+  }
+
+  .submit-btn {
+    background: #0b3d91;
+    border-radius: 30px;
+    font-weight: 600;
+    margin-bottom: 15px;
+  }
+
+  .signup-link {
+    font-size: 14px;
+
+    a {
+      color: #0b3d91;
+      font-weight: 600;
+      margin-left: 4px;
+      text-decoration: none;
+    }
+  }
+
+  .error-message {
+    font-size: 14px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+}
+
+.responsive-img {
+  width: 100%;
+  max-width: 300px;  // You can adjust this as needed
+  height: auto;
+  display: block;
+  margin: 0 auto;     // Center the image
+}

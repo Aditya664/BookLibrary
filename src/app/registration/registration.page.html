@@ -1,0 +1,63 @@
+<ion-content class="ion-padding registration-page" [fullscreen]="true">
+  <div class="registration-container">
+    <!-- Online illustration -->
+    <div class="illustration">
+      <img src="assets/signin.png" alt="Sign In Image" class="responsive-img" />
+    </div>
+
+    <h2 class="main-title">Register</h2>
+    <p class="subtitle">Please register to login.</p>
+
+    <form [formGroup]="registrationForm" >
+      <!-- Email -->
+      <ion-item class="input-field" lines="none">
+        <ion-icon name="mail-outline" slot="start"></ion-icon>
+        <ion-input type="email" placeholder="Email" formControlName="email"></ion-input>
+      </ion-item>
+
+      <!-- Username -->
+      <ion-item class="input-field" lines="none">
+        <ion-icon name="person-outline" slot="start"></ion-icon>
+        <ion-input placeholder="Username" formControlName="userName"></ion-input>
+      </ion-item>
+
+      <!-- Full Name -->
+      <ion-item class="input-field" lines="none">
+        <ion-icon name="person-circle-outline" slot="start"></ion-icon>
+        <ion-input placeholder="Full Name" formControlName="fullName"></ion-input>
+      </ion-item>
+
+      <!-- Password -->
+      <ion-item class="input-field" lines="none">
+        <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
+        <ion-input
+          [type]="showPassword ? 'text' : 'password'"
+          placeholder="Password"
+          formControlName="password"
+        ></ion-input>
+        <ion-icon
+          [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
+          slot="end"
+          (click)="togglePasswordVisibility()"
+          class="password-toggle"
+        ></ion-icon>
+      </ion-item>
+
+      <!-- Reminder toggle -->
+      <ion-item lines="none" class="toggle-item">
+        <ion-label>Reminder me next time</ion-label>
+        <ion-toggle slot="end"></ion-toggle>
+      </ion-item>
+
+      <!-- Submit button -->
+      <ion-button expand="block" type="submit" class="submit-btn" (click)="register()" [disabled]="registrationForm.invalid">
+        Sign Up
+      </ion-button>
+
+      <!-- Sign In link -->
+      <div class="signin-link">
+        Already have an account? <a [routerLink]="['/login']" >Sign In</a>
+      </div>
+    </form>
+  </div>
+</ion-content>

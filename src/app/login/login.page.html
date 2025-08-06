@@ -1,0 +1,50 @@
+<ion-content class="ion-padding login-page" [fullscreen]="true">
+  <div class="login-container">
+    <!-- Online illustration -->
+    <div class="illustration">
+      <img src="assets/signin.png" alt="Sign In Image" class="responsive-img" />
+    </div>
+
+    <h2 class="main-title">Login</h2>
+    <p class="subtitle">Please enter your credentials to continue.</p>
+
+    <form [formGroup]="loginForm">
+      <!-- Username -->
+      <ion-item class="input-field" lines="none">
+        <ion-icon name="person-outline" slot="start"></ion-icon>
+        <ion-input placeholder="Username" formControlName="username"></ion-input>
+      </ion-item>
+
+      <!-- Password -->
+      <ion-item class="input-field" lines="none">
+        <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
+        <ion-input
+          [type]="showPassword ? 'text' : 'password'"
+          placeholder="Password"
+          formControlName="password">
+        </ion-input>
+        <ion-icon
+          [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
+          slot="end"
+          (click)="togglePasswordVisibility()"
+          class="password-toggle">
+        </ion-icon>
+      </ion-item>
+
+      <!-- Error message -->
+      <div *ngIf="errorMessage" class="error-message">
+        <ion-text color="danger">{{ errorMessage }}</ion-text>
+      </div>
+
+      <!-- Login button -->
+      <ion-button expand="block" type="submit" class="submit-btn" (click)="login()" [disabled]="loginForm.invalid">
+        Login
+      </ion-button>
+
+      <!-- Sign Up link -->
+      <div class="signup-link">
+        Don't have an account? <a routerLink="/registration">Create one</a>
+      </div>
+    </form>
+  </div>
+</ion-content>
