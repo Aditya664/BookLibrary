@@ -11,28 +11,32 @@ import { Platform } from '@ionic/angular';
   standalone: false,
 })
 export class AppComponent  implements OnInit{
+ 
+  
+  initializeApp() {
+    this.platform.ready().then(() => {
+      if (this.platform.is('capacitor')) {
+        StatusBar.setOverlaysWebView({ overlay: false });
+        StatusBar.setStyle({ style: Style.Dark });
+        StatusBar.setBackgroundColor({ color: '#ffffff' });
+      }
+    });
+  }
+
   constructor(private authService:AuthService,
     private platform: Platform,
-    private router:Router) {}
+    private router:Router) {
+        this.initializeApp();
+    }
 
     ngOnInit() {
-      this.platform.ready().then(() => {
-        this.setStatusBarTheme();
-  
+      this.initializeApp();
         if (this.authService.isLoggedIn()) {
           this.router.navigate(['/tabs/dashboard']);
         } else {
           this.router.navigate(['/login']);
         }
-      });
     }
   
-    async setStatusBarTheme() {
-      try {
-        await StatusBar.setStyle({ style: Style.Dark });  // Dark icons (good for light background)
-        await StatusBar.setBackgroundColor({ color: '#ffffff' });  // White background
-      } catch (error) {
-        console.warn('Status bar plugin not available or failed:', error);
-      }
-    }
+    
 }

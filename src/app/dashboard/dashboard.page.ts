@@ -1,5 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { BookService } from '../services/book.service';
+import { ApiResponse, BookResponse, GenreResponseWithBooks } from '../Model/ApiResponse';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -7,10 +10,67 @@ import { Router } from '@angular/router';
   styleUrls: ['./dashboard.page.scss'],
   standalone:false
 })
-export class DashboardPage {
+export class DashboardPage implements OnInit{
    loggedInUserName = localStorage.getItem('fullName');
+    genres:GenreResponseWithBooks[] = [];
+    popularBooks:BookResponse[] = [];
+    isLoading = false;
+    recentBooks:BookResponse[] = []
+    continueReading!:BookResponse;;
 
-   constructor(private router:Router){}
+    getInitials(title: string): string {
+      if (!title) return '';
+      return title
+        .split(' ')
+        .slice(0, 2)
+        .map(word => word.charAt(0))
+        .join('')
+        .toUpperCase();
+    }
+    
+    getGradientClass(title: string): string {
+      const gradients = [
+        'gradient-red',
+        'gradient-blue',
+        'gradient-purple',
+        'gradient-green',
+        'gradient-orange',
+        'gradient-teal',
+        'gradient-pink'
+      ];
+    
+      // Simple hash to get a consistent gradient for each title
+      const hash = Array.from(title).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      return gradients[hash % gradients.length];
+    }
+    
+    fetchData(): void {
+      this.isLoading = true;
+    
+      forkJoin({
+        popularBooks: this.bookService.getPopularBooks(),
+        genres: this.bookService.getAllGenres(),
+        recentBooks:this.bookService.getRecentlyAddedBooks()
+      }).subscribe({
+        next: ({ popularBooks, genres,recentBooks }) => {
+          this.popularBooks = popularBooks.data;
+          this.genres = genres.data;
+          this.recentBooks = recentBooks.data
+          this.isLoading = false;
+          this.continueReading = this.popularBooks[0]
+        },
+        error: (error) => {
+          console.error('Error loading data', error);
+          this.isLoading = false;
+        }
+      });
+    }
+
+   ngOnInit(): void {
+      this.fetchData()
+   }
+
+   constructor(private router:Router,private bookService:BookService){}
 
    get firstName(): string {
     return this.loggedInUserName
@@ -86,8 +146,6 @@ export class DashboardPage {
     description: 'A dystopian novel warning about the dangers of totalitarianism and surveillance.'
   }
 ];
-popularBooks = this.books.slice(0, 3); // top 3 as popular
-recentBooks = this.books.slice(3, 5);  // next 2 as recent
 
   openBook(book: any) {
     this.router.navigate(['/book-detail', book.id]);

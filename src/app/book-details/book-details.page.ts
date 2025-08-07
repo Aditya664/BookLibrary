@@ -1,17 +1,20 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { App } from '@capacitor/app';
 import { Share } from '@capacitor/share';
+import { NavController, Platform } from '@ionic/angular';
 
 @Component({
   selector: 'app-book-details',
   templateUrl: './book-details.page.html',
   styleUrls: ['./book-details.page.scss'],
-  standalone:false
+  standalone: false,
 })
 export class BookDetailsPage implements OnInit {
   book = {
-    id:'1',
-    image: 'https://images-na.ssl-images-amazon.com/images/I/51Z0nLAfLmL._SX331_BO1,204,203,200_.jpg', // replace with actual image path or URL
+    id: '1',
+    image:
+      'https://images-na.ssl-images-amazon.com/images/I/51Z0nLAfLmL._SX331_BO1,204,203,200_.jpg', // replace with actual image path or URL
     title: 'The Alchemist',
     author: 'Paulo Coelho',
     rating: 4,
@@ -28,40 +31,56 @@ export class BookDetailsPage implements OnInit {
       },
     ],
   };
-  
-  constructor(private router: Router) { }
+
+  constructor(
+    private navCtrl: NavController,
+    private platform: Platform
+  ) {}
+
   goBack() {
-    this.router.navigate(["/tabs/dashboard"]);
+    this.navCtrl.back(); 
   }
+
   ngOnInit() {
+    if (this.platform.is('capacitor')) {
+      this.platform.backButton.subscribeWithPriority(10, () => {
+        const canGoBack = window.history.length > 1;
+        if (canGoBack) {
+          this.goBack();
+        } else {
+          App.exitApp(); 
+        }
+      });
+    }
   }
+  
+  
 
   isBookmarked = false;
 
-toggleBookmark() {
-  this.isBookmarked = !this.isBookmarked;
-  const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
-  if (this.isBookmarked) {
-    bookmarks.push(this.book);
-  } else {
-    const index = bookmarks.findIndex((b: any) => b.id === this.book.id);
-    if (index > -1) bookmarks.splice(index, 1);
+  toggleBookmark() {
+    this.isBookmarked = !this.isBookmarked;
+    const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+    if (this.isBookmarked) {
+      bookmarks.push(this.book);
+    } else {
+      const index = bookmarks.findIndex((b: any) => b.id === this.book.id);
+      if (index > -1) bookmarks.splice(index, 1);
+    }
+    localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
   }
-  localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
-}
 
-shareBook() {
-  Share.share({
-    title: this.book.title,
-    text: `Check out this book: ${this.book.title} by ${this.book.author}`,
-    url: window.location.href,
-    dialogTitle: 'Share this book'
-  });
-}
+  shareBook() {
+    Share.share({
+      title: this.book.title,
+      text: `Check out this book: ${this.book.title} by ${this.book.author}`,
+      url: window.location.href,
+      dialogTitle: 'Share this book',
+    });
+  }
 
-openRatingModal() {
-  // Ideally use a modal or alert controller here
-  alert('Rating feature coming soon!');
-}
-
+  openRatingModal() {
+    // Ideally use a modal or alert controller here
+    alert('Rating feature coming soon!');
+  }
 }
