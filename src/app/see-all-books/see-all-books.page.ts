@@ -22,7 +22,6 @@ export class SeeAllBooksPage implements OnInit {
   selectedGenre = 'All';
 
   filterBooksByCategory() {
-    debugger;
     if (this.selectedGenre === 'All') {
       this.filteredBooks = [...this.allBooks];
     } else {
@@ -66,9 +65,33 @@ export class SeeAllBooksPage implements OnInit {
     return gradients[hash % gradients.length];
   }
 
+  getStarsArray(rating: number = 0): string[] {
+    const fullStars = Math.floor(rating);
+    const halfStar = rating % 1 >= 0.5;
+    const totalStars = 5;
+  
+    const starsArray: string[] = [];
+  
+    for (let i = 0; i < fullStars; i++) {
+      starsArray.push('star'); // full star
+    }
+  
+    if (halfStar) {
+      starsArray.push('star-half'); // half star
+    }
+  
+    while (starsArray.length < totalStars) {
+      starsArray.push('star-outline'); // empty star
+    }
+  
+    return starsArray;
+  }
+  
+
+  
   onSearch(event: any) {
     const val = event.target.value?.toLowerCase() || '';
-
+    this.selectedGenre = 'All';
     if (val.trim()) {
       this.filteredBooks = this.allBooks.filter(
         (book) =>
@@ -93,7 +116,7 @@ export class SeeAllBooksPage implements OnInit {
 
   openBook(book: any) {
     debugger;
-    this.router.navigate(['/book-detail', book.id]);
+    this.navCtrl.navigateRoot(['/book-detail', book.id]);
   }
 
   fetchData(): void {

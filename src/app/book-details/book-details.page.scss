@@ -236,12 +236,12 @@
   z-index: 9999;
 }
 
-.rating-badge {
-  display: inline-block;
-  background: #ffe066;
-  color: #1a1a1a;
-  padding: 2px 8px;
-  font-size: 12px;
-  border-radius: 12px;
-  margin-top: 6px;
+
+
+.rating-stars {
+  display: flex;
+  gap: 2px;
+  color: #ffc107;
+  justify-content: center;
+  font-size: 1.2rem;
 }

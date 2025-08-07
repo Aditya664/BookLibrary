@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
-import { LoadingController, ToastController } from '@ionic/angular';
+import { LoadingController, NavController, ToastController } from '@ionic/angular';
 import { ApiResponse, LoginResponse } from '../Model/ApiResponse';
 import { TokenService } from '../services/token.service';
 
@@ -27,7 +27,8 @@ export class LoginPage {
     private authService: AuthService,
     private router: Router,
     private loadingCtrl: LoadingController,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private nav:NavController
   ) {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required]],
@@ -48,7 +49,7 @@ export class LoginPage {
           this.presentToast(response.message || 'Login successful!', 'success');
           localStorage.setItem('token', response.data.jwtToken);
           localStorage.setItem('fullName', TokenService.getFullName() ?? '');
-          this.router.navigate(['/tabs']);
+          this.nav.navigateRoot('/tabs', { replaceUrl: true });
         } else {
           this.presentToast(response.message || 'Login failed.', 'warning');
         }

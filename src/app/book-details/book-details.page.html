@@ -4,91 +4,95 @@
   </div>
 </ng-container>
 <ng-template #mainContent>
-<ion-content class="book-detail-content ion-padding" [fullscreen]="false" >
-  <div class="inner-content">
-    <!-- Back Button -->
-    <ion-button fill="clear" class="back-btn" (click)="goBack()">
-      <ion-icon name="arrow-back-outline"></ion-icon>
-    </ion-button>
+  <ion-content class="book-detail-content ion-padding" [fullscreen]="false">
+    <div class="inner-content">
+      <!-- Back Button -->
+      <ion-button fill="clear" class="back-btn" (click)="goBack()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
 
-    <!-- Book Hero Section -->
-    <div class="book-hero">
-      <div class="image-wrapper">
-        <ng-container *ngIf="book.image; else textPlaceholder">
-          <img
-            [src]="book.image"
-            (error)="book.image = ''"
-            class="book-image"
-            alt="{{ book.title }}"
-          />
-        </ng-container>
-        
-        <ng-template #textPlaceholder>
-          <div
-            class="book-image placeholder"
-            [ngClass]="getGradientClass(book.title)"
-          >
-            <span>{{ getInitials(book.title) }}</span>
-          </div>
-        </ng-template>
-        <div class="gradient-overlay"></div>
+      <!-- Book Hero Section -->
+      <div class="book-hero">
+        <div class="image-wrapper">
+          <ng-container *ngIf="book.image; else textPlaceholder">
+            <img
+              [src]="book.image"
+              (error)="book.image = ''"
+              class="book-image"
+              alt="{{ book.title }}"
+            />
+          </ng-container>
+
+          <ng-template #textPlaceholder>
+            <div
+              class="book-image placeholder"
+              [ngClass]="getGradientClass(book.title)"
+            >
+              <span>{{ getInitials(book.title) }}</span>
+            </div>
+          </ng-template>
+          <div class="gradient-overlay"></div>
+        </div>
+        <h2 class="book-title">{{ book.title }}</h2>
+        <p class="book-author">by {{ book.author }}</p>
+
+        <!-- Optional Rating -->
+        <div class="rating-stars">
+          <ng-container *ngFor="let star of getStarsArray(book.rating)">
+            <ion-icon [name]="star"></ion-icon>
+          </ng-container>
+        </div>
       </div>
-      <h2 class="book-title">{{ book.title }}</h2>
-      <p class="book-author">by {{ book.author }}</p>
 
-      <!-- Optional Rating -->
-        <div class="rating-badge">⭐ {{ book.rating || 'N/A' }}</div>
-    </div>
+      <!-- Action Buttons -->
+      <div class="book-actions">
+        <ion-button fill="clear" (click)="toggleBookmark()">
+          <ion-icon
+            [name]="isBookmarked ? 'bookmark' : 'bookmark-outline'"
+          ></ion-icon>
+          <ion-label>{{ isBookmarked ? 'Bookmarked' : 'Bookmark' }}</ion-label>
+        </ion-button>
 
-    <!-- Action Buttons -->
-    <div class="book-actions">
-      <ion-button fill="clear" (click)="toggleBookmark()">
-        <ion-icon [name]="isBookmarked ? 'bookmark' : 'bookmark-outline'"></ion-icon>
-        <ion-label>{{ isBookmarked ? 'Bookmarked' : 'Bookmark' }}</ion-label>
-      </ion-button>
+        <ion-button fill="clear" (click)="openRatingModal()">
+          <ion-icon name="star-outline"></ion-icon>
+          <ion-label>Rate</ion-label>
+        </ion-button>
 
-      <ion-button fill="clear" (click)="openRatingModal()">
-        <ion-icon name="star-outline"></ion-icon>
-        <ion-label>Rate</ion-label>
-      </ion-button>
-
-      <ion-button fill="clear" (click)="shareBook()">
-        <ion-icon name="share-social-outline"></ion-icon>
-        <ion-label>Share</ion-label>
-      </ion-button>
-    </div>
-
-    <!-- Book Description -->
-    <div class="book-description-section">
-      <div class="desc-header">
-        <h3>Description</h3>
-        <ion-button fill="clear" class="play-btn">
-          <ion-icon name="play-circle-outline" slot="icon-only"></ion-icon>
+        <ion-button fill="clear" (click)="shareBook()">
+          <ion-icon name="share-social-outline"></ion-icon>
+          <ion-label>Share</ion-label>
         </ion-button>
       </div>
-      <p>{{ book.description }}</p>
-    </div>
 
-    <!-- Start Reading Button -->
-    <ion-button expand="block" color="primary" >
-      Start Reading
-    </ion-button>
+      <!-- Book Description -->
+      <div class="book-description-section">
+        <div class="desc-header">
+          <h3>Description</h3>
+          <ion-button fill="clear" class="play-btn">
+            <ion-icon name="play-circle-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+        <p>{{ book.description }}</p>
+      </div>
 
-    <!-- Tags/Genres -->
-    <div class="tags-section" *ngIf="book.genres?.length">
-      <h4>Genres</h4>
-      <ion-chip *ngFor="let genre of book.genres">{{ genre.name }}</ion-chip>
-    </div>
+      <!-- Start Reading Button -->
+      <ion-button expand="block" color="primary"> Start Reading </ion-button>
 
-    <!-- Reviews (Optional) -->
-    <div class="reviews-section" *ngIf="book.reviews?.length">
-      <h4>User Reviews</h4>
-      <ion-card *ngFor="let review of book.reviews">
-        <ion-card-content>
-          <p><strong>{{ review.user }}</strong>: {{ review.comment }}</p>
-        </ion-card-content>
-      </ion-card>
+      <!-- Tags/Genres -->
+      <div class="tags-section" *ngIf="book.genres?.length">
+        <h4>Genres</h4>
+        <ion-chip *ngFor="let genre of book.genres">{{ genre.name }}</ion-chip>
+      </div>
+
+      <!-- Reviews (Optional) -->
+      <div class="reviews-section" *ngIf="book.reviews?.length">
+        <h4>User Reviews</h4>
+        <ion-card *ngFor="let review of book.reviews">
+          <ion-card-content>
+            <p><strong>{{ review.user }}</strong>: {{ review.comment }}</p>
+          </ion-card-content>
+        </ion-card>
+      </div>
     </div>
-  </div>
-</ion-content>
+  </ion-content>
 </ng-template>

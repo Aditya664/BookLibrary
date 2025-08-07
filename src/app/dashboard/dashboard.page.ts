@@ -7,6 +7,8 @@ import {
   GenreResponseWithBooks,
 } from '../Model/ApiResponse';
 import { forkJoin } from 'rxjs';
+import { NavController, Platform } from '@ionic/angular';
+import { App } from '@capacitor/app';
 
 @Component({
   selector: 'app-dashboard',
@@ -30,9 +32,9 @@ export class DashboardPage implements OnInit {
       rating: 4.8,
       description:
         'A practical guide to building good habits and breaking bad ones using proven frameworks.',
-        genres: [],
-        reviews: [],
-        createdAt: '2023-08-07T12:00:00.000Z'
+      genres: [],
+      reviews: [],
+      createdAt: '2023-08-07T12:00:00.000Z',
     },
     {
       id: 2,
@@ -42,9 +44,9 @@ export class DashboardPage implements OnInit {
       rating: 4.5,
       description:
         'Explores the Japanese concept of purpose and how it can lead to a long, fulfilling life.',
-        genres: [],
-        reviews: [],
-        createdAt: '2023-08-07T12:00:00.000Z'
+      genres: [],
+      reviews: [],
+      createdAt: '2023-08-07T12:00:00.000Z',
     },
   ];
 
@@ -99,13 +101,13 @@ export class DashboardPage implements OnInit {
       recentBooks: this.bookService.getRecentlyAddedBooks(),
       allBooks: this.bookService.getAllBooks(),
     }).subscribe({
-      next: ({ popularBooks, genres, recentBooks ,allBooks}) => {
-        this.popularBooks = popularBooks.data.slice(0,10);
+      next: ({ popularBooks, genres, recentBooks, allBooks }) => {
+        this.popularBooks = popularBooks.data.slice(0, 10);
         this.genres = genres.data;
         this.recentBooks = recentBooks.data;
         this.isLoading = false;
         this.continueReading = this.popularBooks[0];
-        this.allBooks =  allBooks.data
+        this.allBooks = allBooks.data;
       },
       error: (error) => {
         console.error('Error loading data', error);
@@ -118,7 +120,12 @@ export class DashboardPage implements OnInit {
     this.fetchData();
   }
 
-  constructor(private router: Router, private bookService: BookService) {}
+  constructor(
+    private router: Router,
+    private bookService: BookService,
+    private platform: Platform,
+    private nav: NavController
+  ) {}
 
   get firstName(): string {
     return this.loggedInUserName
@@ -203,14 +210,13 @@ export class DashboardPage implements OnInit {
   ];
 
   openBook(book: any) {
-    this.router.navigate(['/book-detail', book.id]);
+    this.nav.navigateRoot(['/book-detail', book.id]);
   }
 
   handleRefresh(event: any) {
     setTimeout(() => {
-      this.fetchData(); 
-      event.target.complete(); 
+      this.fetchData();
+      event.target.complete();
     }, 1500);
   }
-  
 }

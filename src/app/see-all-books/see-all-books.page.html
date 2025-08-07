@@ -78,8 +78,12 @@
         <div class="book-info">
           <h4>{{ book.title }}</h4>
           <p>{{ book.author }}</p>
-          <div class="rating-badge">⭐ {{ book.rating || 'N/A' }}</div>
-        </div>
+          <div class="rating-stars">
+            <ng-container *ngFor="let star of getStarsArray(book.rating)">
+              <ion-icon [name]="star"></ion-icon>
+            </ng-container>
+          </div>
+                  </div>
       </div>
     </div>
   </ion-content>

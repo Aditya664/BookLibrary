@@ -24,6 +24,28 @@ export class BookDetailsPage implements OnInit {
     private bookService: BookService
   ) {}
 
+  getStarsArray(rating: number = 0): string[] {
+    const fullStars = Math.floor(rating);
+    const halfStar = rating % 1 >= 0.5;
+    const totalStars = 5;
+  
+    const starsArray: string[] = [];
+  
+    for (let i = 0; i < fullStars; i++) {
+      starsArray.push('star'); // full star
+    }
+  
+    if (halfStar) {
+      starsArray.push('star-half'); // half star
+    }
+  
+    while (starsArray.length < totalStars) {
+      starsArray.push('star-outline'); // empty star
+    }
+  
+    return starsArray;
+  }
+
   goBack() {
     this.navCtrl.back();
   }
@@ -33,6 +55,8 @@ export class BookDetailsPage implements OnInit {
     if (this.platform.is('capacitor')) {
       this.platform.backButton.subscribeWithPriority(10, () => {
         const canGoBack = window.history.length > 1;
+        console.log(window.history);
+        
         if (canGoBack) {
           this.goBack();
         } else {
