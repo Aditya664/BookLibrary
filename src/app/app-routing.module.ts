@@ -29,10 +29,6 @@ const routes: Routes = [
     loadChildren: () => import('./profile/profile.module').then( m => m.ProfilePageModule)
   },
   {
-    path: 'search',
-    loadChildren: () => import('./search/search.module').then( m => m.SearchPageModule)
-  },
-  {
     path: 'book-detail/:id',
     loadChildren: () => import('./book-details/book-details.module').then(m => m.BookDetailsPageModule)
   },
@@ -41,8 +37,16 @@ const routes: Routes = [
     loadChildren: () => import('./tabs/tabs.module').then( m => m.TabsPageModule)
   },
   {
+    path: 'see-all-books',
+    loadChildren: () => import('./see-all-books/see-all-books.module').then( m => m.SeeAllBooksPageModule)
+  },
+  {
     path: 'book-details',
     loadChildren: () => import('./book-details/book-details.module').then( m => m.BookDetailsPageModule)
+  },
+  {
+    path: 'see-all-books',
+    loadChildren: () => import('./see-all-books/see-all-books.module').then( m => m.SeeAllBooksPageModule)
   },
 ];
 

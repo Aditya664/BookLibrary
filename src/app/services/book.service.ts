@@ -16,12 +16,11 @@ export class BookService {
     getPopularBooks(): Observable<ApiResponse<BookResponse[]>> {
         return this.http.get<ApiResponse<BookResponse[]>>(`${this.apiUrl}/api/Books/getAllBooks`).pipe(
           map((response) => {
-            debugger
-            const filteredBooks = response.data?.filter(book => book.rating > 2) ?? [];
+            const sortedBooks = response.data?.sort((a, b) => b.rating - a.rating) ?? [];
             return {
               success: response.success,
               message: response.message,
-              data: filteredBooks
+              data: sortedBooks
             };
           })
         );
@@ -43,6 +42,13 @@ export class BookService {
           })
         );
       }
-      
+
+      getAllBooks(): Observable<ApiResponse<BookResponse[]>> {
+        return this.http.get<ApiResponse<BookResponse[]>>(`${this.apiUrl}/api/Books/getAllBooks`);
+      }
+
+      getBookById(id: string): Observable<ApiResponse<BookResponse>> {
+        return this.http.get<ApiResponse<BookResponse>>(`${this.apiUrl}/api/Books/${id}`);
+      }
     
 }

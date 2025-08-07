@@ -15,7 +15,7 @@ const routes: Routes = [
       {
         path: 'search',
         loadChildren: () =>
-          import('../search/search.module').then(m => m.SearchPageModule),
+          import('../see-all-books/see-all-books.module').then(m => m.SeeAllBooksPageModule),
       },
       {
         path: 'profile',

@@ -1,0 +1,222 @@
+.see-all-books-page {
+    ion-content {
+      --background: #f7f8fa;
+    }
+  
+    .back-btn {
+      margin-bottom: 10px;
+      color: #0077ff;
+      font-size: 18px;
+  
+      ion-icon {
+        font-size: 22px;
+      }
+    }
+  
+    .custom-searchbar {
+      --background: #e9eef6;
+      --border-radius: 12px;
+      --box-shadow: none;
+      --color: #1a1a1a;
+      --placeholder-color: #777;
+      padding: 0 16px;
+      margin-bottom: 1rem;
+    }
+  
+    .book-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 16px;
+      padding-bottom: 2rem;
+    }
+  
+    .book-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+      }
+  
+      .image-wrapper {
+        position: relative;
+  
+        .book-image {
+          width: 100%;
+          height: 160px;
+          object-fit: cover;
+          border-radius: 8px;
+          margin-bottom: 10px;
+  
+          &.placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+          }
+        }
+  
+        .gradient-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 160px;
+          border-radius: 8px;
+          background: linear-gradient(to top, rgba(0, 0, 0, 0.25), transparent);
+        }
+      }
+  
+      .book-info {
+        h4 {
+          font-size: 14px;
+          font-weight: 600;
+          margin: 0 0 4px;
+          color: #1a1a1a;
+        }
+  
+        p {
+          font-size: 12px;
+          color: #666;
+          margin: 0;
+        }
+      }
+    }
+  
+    // Optional: gradients for placeholders
+    .gradient-red { background: linear-gradient(135deg, #f43f5e, #fb7185); }
+    .gradient-blue { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+    .gradient-purple { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
+    .gradient-green { background: linear-gradient(135deg, #10b981, #34d399); }
+    .gradient-orange { background: linear-gradient(135deg, #f97316, #fdba74); }
+    .gradient-teal { background: linear-gradient(135deg, #14b8a6, #2dd4bf); }
+    .gradient-pink { background: linear-gradient(135deg, #ec4899, #f472b6); }
+  }
+  
+.spinner-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--ion-background-color, #fff);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  
+  
+  .back-btn {
+    margin-bottom: 0.5rem;
+    color: #3a3a3a;
+  }
+
+  .rating-badge {
+    display: inline-block;
+    background: #ffe066;
+    color: #1a1a1a;
+    padding: 2px 8px;
+    font-size: 12px;
+    border-radius: 12px;
+    margin-top: 6px;
+  }
+  
+  ion-refresher-content {
+    --pulling-text-color: #0077ff;
+    --refreshing-text-color: #0077ff;
+  }
+  
+  .see-all-books-page {
+    ion-content {
+      --background: linear-gradient(to bottom right, #f1f5f9, #e0f2fe);
+    }
+  }
+  .back-btn {
+    margin: 10px 0;
+    color: #0077ff;
+    font-weight: 500;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  
+    ion-icon {
+      font-size: 22px;
+    }
+  }
+  
+  .genre-tabs-container {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 0 12px;
+    margin-bottom: 10px;
+  
+    ion-segment {
+      display: inline-flex;
+      min-width: max-content;
+      --background: #f4f4f4;
+      --border-radius: 12px;
+      --indicator-color: var(--ion-color-primary);
+      --indicator-height: 3px;
+    }
+  
+    ion-segment-button {
+      flex-shrink: 0;
+      min-width: max-content;
+      font-size: 14px;
+      padding: 0 12px;
+      --color-checked: var(--ion-color-primary);
+      --background-checked: #ffffff;
+      --border-radius: 20px;
+      --color: #666;
+    }
+  }
+  .genre-tabs-container {
+    margin: 10px 0;
+    padding: 0 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+  
+    &::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
+    }
+  
+    ion-segment.custom-segment {
+      --background: #f2f2f2;
+      --color-checked: #fff;
+      --indicator-color: #38b2ac;
+      --indicator-height: 3px;
+      border-radius: 10px;
+      padding: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+  
+    .custom-segment-button {
+      --background-checked: #38b2ac;
+      --color-checked: #fff;
+      --border-radius: 20px;
+      --padding-start: 12px;
+      --padding-end: 12px;
+      --padding-top: 8px;
+      --padding-bottom: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+  
+    ion-segment-button {
+      transition: background-color 0.2s ease;
+    }
+  }
+    

@@ -1,0 +1,86 @@
+<ng-container *ngIf="isLoading; else mainContent">
+  <div class="spinner-fullscreen">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+</ng-container>
+
+<ng-template #mainContent>
+  <ion-content fullscreen="false" class="see-all-books-page ion-padding">
+    <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+      <ion-refresher-content
+        pullingIcon="sparkles-outline"
+        refreshingSpinner="crescent"
+        pullingText="Pull down to refresh your library ✨"
+        refreshingText="Refreshing content..."
+      ></ion-refresher-content>
+    </ion-refresher>
+    <!-- Back Button -->
+    <ion-button fill="clear" class="back-btn" (click)="goBack()">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </ion-button>
+
+    <!-- Searchbar -->
+    <ion-searchbar
+      [(ngModel)]="searchQuery"
+      (ionInput)="onSearch($event)"
+      placeholder="Search books..."
+      class="custom-searchbar"
+      show-clear-button="focus"
+    ></ion-searchbar>
+
+    <!-- genre-tabs.component.html -->
+    <div class="genre-tabs-container">
+      <ion-segment
+        [(ngModel)]="selectedGenre"
+        (ionChange)="filterBooksByCategory()"
+        scrollable
+        class="custom-segment"
+      >
+        <ion-segment-button
+          *ngFor="let cat of genres"
+          [value]="cat.name"
+          class="custom-segment-button"
+        >
+          {{ cat.name }}
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+
+    <!-- Book Grid -->
+    <div class="book-grid ion-padding-horizontal">
+      <div
+        class="book-card"
+        *ngFor="let book of filteredBooks.length ? filteredBooks : allBooks"
+        (click)="openBook(book)"
+      >
+        <div class="image-wrapper">
+          <ng-container *ngIf="book.image; else textPlaceholder">
+            <img
+              [src]="book.image"
+              (error)="book.image = ''"
+              class="book-image"
+              alt="{{ book.title }}"
+            />
+          </ng-container>
+
+          <ng-template #textPlaceholder>
+            <div
+              class="book-image placeholder"
+              [ngClass]="getGradientClass(book.title)"
+            >
+              <span>{{ getInitials(book.title) }}</span>
+            </div>
+          </ng-template>
+
+          <div class="gradient-overlay"></div>
+        </div>
+
+        <div class="book-info">
+          <h4>{{ book.title }}</h4>
+          <p>{{ book.author }}</p>
+          <div class="rating-badge">⭐ {{ book.rating || 'N/A' }}</div>
+        </div>
+      </div>
+    </div>
+  </ion-content>
+</ng-template>

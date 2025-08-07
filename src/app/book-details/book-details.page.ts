@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { App } from '@capacitor/app';
 import { Share } from '@capacitor/share';
 import { NavController, Platform } from '@ionic/angular';
+import { BookService } from '../services/book.service';
+import { ApiResponse, BookResponse } from '../Model/ApiResponse';
 
 @Component({
   selector: 'app-book-details',
@@ -11,50 +13,71 @@ import { NavController, Platform } from '@ionic/angular';
   standalone: false,
 })
 export class BookDetailsPage implements OnInit {
-  book = {
-    id: '1',
-    image:
-      'https://images-na.ssl-images-amazon.com/images/I/51Z0nLAfLmL._SX331_BO1,204,203,200_.jpg', // replace with actual image path or URL
-    title: 'The Alchemist',
-    author: 'Paulo Coelho',
-    rating: 4,
-    description: `The Alchemist is a story about the journey of a young shepherd named Santiago. He dreams of a treasure hidden in the Egyptian pyramids and embarks on a quest full of spiritual lessons, omens, and discoveries.`,
-    genres: ['Fiction', 'Philosophy', 'Adventure', 'Spiritual'],
-    reviews: [
-      {
-        user: 'Anjali Sharma',
-        comment: 'A beautiful journey of self-discovery. Highly recommended!',
-      },
-      {
-        user: 'Ravi Mehta',
-        comment: 'Uplifting and thought-provoking. A must-read classic.',
-      },
-    ],
-  };
+  book!: BookResponse;
+  bookId!: string;
+  isLoading = false;
 
   constructor(
     private navCtrl: NavController,
-    private platform: Platform
+    private platform: Platform,
+    private route: ActivatedRoute,
+    private bookService: BookService
   ) {}
 
   goBack() {
-    this.navCtrl.back(); 
+    this.navCtrl.back();
   }
 
   ngOnInit() {
+    this.getBookDetailsById();
     if (this.platform.is('capacitor')) {
       this.platform.backButton.subscribeWithPriority(10, () => {
         const canGoBack = window.history.length > 1;
         if (canGoBack) {
           this.goBack();
         } else {
-          App.exitApp(); 
+          App.exitApp();
         }
       });
     }
   }
+
+  getBookDetailsById() {
+    this.isLoading = true;
+    this.route.params.subscribe((params) => {
+      this.bookId = params['id'];
+      this.bookService.getBookById(this.bookId).subscribe((response:ApiResponse<BookResponse>) => {
+        this.book = response.data;
+        this.isLoading = false;
+      }, ()=>{this.isLoading = false;});
+    });
+  }
+
+  getInitials(title: string): string {
+    if (!title) return '';
+    return title
+      .split(' ')
+      .slice(0, 2)
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase();
+  }
   
+  getGradientClass(title: string): string {
+    const gradients = [
+      'gradient-red',
+      'gradient-blue',
+      'gradient-purple',
+      'gradient-green',
+      'gradient-orange',
+      'gradient-teal',
+      'gradient-pink'
+    ];
   
+    // Simple hash to get a consistent gradient for each title
+    const hash = Array.from(title).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return gradients[hash % gradients.length];
+  }
 
   isBookmarked = false;
 

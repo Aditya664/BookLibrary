@@ -5,88 +5,102 @@
 </ng-container>
 
 <ng-template #mainContent>
-<ion-content class="dashboard-content ion-padding"  [fullscreen]="false">
-  <!-- Header -->
-  <div class="user-header ion-padding-horizontal ion-margin-top">
-    <ion-avatar>
-      <img
-        src="https://dt2sdf0db8zob.cloudfront.net/wp-content/uploads/2019/12/9-Best-Online-Avatars-and-How-to-Make-Your-Own-for-Free-image21.jpg"
-      />
-    </ion-avatar>
-    <div class="welcome-text">
-      <h2>Hello, {{ firstName }}!</h2>
-      <p>Discover your next great read</p>
-    </div>
-    <ion-icon name="notifications-outline" size="large"></ion-icon>
-  </div>
-
-  <!-- Search -->
-  <ion-searchbar
-    placeholder="Search books, authors..."
-    show-clear-button="focus"
-  ></ion-searchbar>
-
-  <!-- Categories -->
-  <div class="section-header">
-    <h3>Categories</h3>
-    <ion-button fill="clear" size="small">See all</ion-button>
-  </div>
-  <div class="horizontal-scroll">
-    <div class="category-item" *ngFor="let cat of genres">
-      <ion-icon [name]="cat.iconName" size="large"></ion-icon>
-      <p>{{ cat.name }}</p>
-    </div>
-  </div>
-
-  <!-- Popular Books -->
-  <div class="section-header">
-    <h3>Popular Books</h3>
-    <ion-button fill="clear" size="small">See all</ion-button>
-  </div>
-  <div class="horizontal-scroll">
-    <div
-      class="book-card"
-      *ngFor="let book of popularBooks"
-      (click)="openBook(book)"
-    >
-    <ng-container *ngIf="book.image; else textPlaceholder">
-      <img
-        [src]="book.image"
-        (error)="book.image = ''"
-        class="book-image"
-        alt="{{ book.title }}"
-      />
-    </ng-container>
-    
-    <ng-template #textPlaceholder>
-      <div
-        class="book-image placeholder"
-        [ngClass]="getGradientClass(book.title)"
-      >
-        <span>{{ getInitials(book.title) }}</span>
+  <ion-content class="dashboard-content ion-padding" [fullscreen]="false">
+    <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+      <ion-refresher-content
+        pullingIcon="sparkles-outline"
+        refreshingSpinner="crescent"
+        pullingText="Pull down to refresh your library ✨"
+        refreshingText="Refreshing content..."
+      ></ion-refresher-content>
+    </ion-refresher>
+    <!-- Header -->
+    <div class="user-header ion-padding-horizontal ion-margin-top">
+      <ion-avatar>
+        <img
+          src="https://dt2sdf0db8zob.cloudfront.net/wp-content/uploads/2019/12/9-Best-Online-Avatars-and-How-to-Make-Your-Own-for-Free-image21.jpg"
+        />
+      </ion-avatar>
+      <div class="welcome-text">
+        <h2>Hello, {{ firstName }}!</h2>
+        <p>Discover your next great read</p>
       </div>
-    </ng-template>
-      <h4>{{ book.title }}</h4>
-      <p>{{ book.author }}</p>
+      <ion-icon name="notifications-outline" size="large"></ion-icon>
     </div>
-  </div>
 
-  <!-- Recently Added -->
-  <div class="section-header">
-    <h3>Recently Added</h3>
-  </div>
-  <ion-list class="recent-books-list">
-    <ion-item *ngFor="let book of recentBooks" (click)="openBook(book)">
-      <ion-thumbnail slot="start">
+    <!-- Search -->
+    <ion-searchbar
+      [(ngModel)]="searchQuery"
+      (ionInput)="onSearch($event)"
+      placeholder="Search books or authors"
+    ></ion-searchbar>
+
+    <!-- Search Results -->
+    <div
+      *ngIf="searchQuery"
+      class="search-results-wrapper ion-padding-horizontal"
+    >
+      <div *ngIf="filteredBooks.length > 0; else noResults">
+        <div class="search-scroll">
+          <ion-item
+            *ngFor="let book of filteredBooks"
+            class="search-result-item"
+            lines="none"
+            button
+            (click)="openBook(book)"
+          >
+            <ion-icon
+              name="book-outline"
+              slot="start"
+              color="primary"
+            ></ion-icon>
+            <ion-label>
+              <h3 class="book-title">{{ book.title }}</h3>
+              <p class="book-author">{{ book.author }}</p>
+            </ion-label>
+          </ion-item>
+        </div>
+      </div>
+
+      <ng-template #noResults>
+        <ion-text color="medium" class="no-results-text"
+          >No results found.</ion-text
+        >
+      </ng-template>
+    </div>
+
+    <!-- Categories -->
+    <div class="section-header">
+      <h3>Categories</h3>
+      <ion-button fill="clear" size="small" >See all</ion-button>
+    </div>
+    <div class="horizontal-scroll">
+      <div class="category-item" *ngFor="let cat of genres">
+        <ion-icon [name]="cat.iconName" size="large"></ion-icon>
+        <p>{{ cat.name }}</p>
+      </div>
+    </div>
+
+    <!-- Popular Books -->
+    <div class="section-header">
+      <h3>Popular Books</h3>
+      <ion-button fill="clear"  routerLink="/see-all-books" size="small">See all</ion-button>
+    </div>
+    <div class="horizontal-scroll">
+      <div
+        class="book-card"
+        *ngFor="let book of popularBooks"
+        (click)="openBook(book)"
+      >
         <ng-container *ngIf="book.image; else textPlaceholder">
           <img
             [src]="book.image"
             (error)="book.image = ''"
             class="book-image"
-            loading="lazy"
             alt="{{ book.title }}"
           />
         </ng-container>
+
         <ng-template #textPlaceholder>
           <div
             class="book-image placeholder"
@@ -95,47 +109,75 @@
             <span>{{ getInitials(book.title) }}</span>
           </div>
         </ng-template>
-      </ion-thumbnail>
-      <ion-label>
-        <h3>{{ book.title }}</h3>
+        <h4>{{ book.title }}</h4>
         <p>{{ book.author }}</p>
-      </ion-label>
-      <ion-badge slot="end" color="success">New</ion-badge>
-    </ion-item>
-  </ion-list>
-  
+      </div>
+    </div>
 
-  <!-- Continue Reading -->
-  <div class="section-header">
-    <h3>Continue Reading</h3>
-  </div>
-  
-  <div class="continue-card ion-padding-horizontal">
-    <div class="image-wrapper">
-      <ng-container *ngIf="continueReading.image; else textPlaceholder">
-        <img
-          [src]="continueReading.image"
-          (error)="continueReading.image = ''"
-          class="book-image"
-          loading="lazy"
-          alt="{{ continueReading.title }}"
-        />
-      </ng-container>
-      <ng-template #textPlaceholder>
-        <div
-          class="book-image placeholder"
-          [ngClass]="getGradientClass(continueReading.title)"
-        >
-          <span>{{ getInitials(continueReading.title) }}</span>
-        </div>
-      </ng-template>
+    <!-- Recently Added -->
+    <div class="section-header">
+      <h3>Recently Added</h3>
     </div>
-  
-    <div class="continue-info">
-      <h4 class="book-title">{{ continueReading.title }}</h4>
-      <p class="book-author">{{ continueReading.author }}</p>
-      <ion-progress-bar value="0.75" color="primary"></ion-progress-bar>
+    <ion-list class="recent-books-list">
+      <ion-item *ngFor="let book of recentBooks" (click)="openBook(book)">
+        <ion-thumbnail slot="start">
+          <ng-container *ngIf="book.image; else textPlaceholder">
+            <img
+              [src]="book.image"
+              (error)="book.image = ''"
+              class="book-image"
+              loading="lazy"
+              alt="{{ book.title }}"
+            />
+          </ng-container>
+          <ng-template #textPlaceholder>
+            <div
+              class="book-image placeholder"
+              [ngClass]="getGradientClass(book.title)"
+            >
+              <span>{{ getInitials(book.title) }}</span>
+            </div>
+          </ng-template>
+        </ion-thumbnail>
+        <ion-label>
+          <h3>{{ book.title }}</h3>
+          <p>{{ book.author }}</p>
+        </ion-label>
+        <ion-badge slot="end" color="success">New</ion-badge>
+      </ion-item>
+    </ion-list>
+
+    <!-- Continue Reading -->
+    <div class="section-header">
+      <h3>Continue Reading</h3>
     </div>
-  </div>
-</ion-content>
+
+    <div class="continue-card ion-padding-horizontal">
+      <div class="image-wrapper">
+        <ng-container *ngIf="continueReading.image; else textPlaceholder">
+          <img
+            [src]="continueReading.image"
+            (error)="continueReading.image = ''"
+            class="book-image"
+            loading="lazy"
+            alt="{{ continueReading.title }}"
+          />
+        </ng-container>
+        <ng-template #textPlaceholder>
+          <div
+            class="book-image placeholder"
+            [ngClass]="getGradientClass(continueReading.title)"
+          >
+            <span>{{ getInitials(continueReading.title) }}</span>
+          </div>
+        </ng-template>
+      </div>
+
+      <div class="continue-info">
+        <h4 class="book-title">{{ continueReading.title }}</h4>
+        <p class="book-author">{{ continueReading.author }}</p>
+        <ion-progress-bar value="0.75" color="primary"></ion-progress-bar>
+      </div>
+    </div>
+  </ion-content>
 </ng-template>

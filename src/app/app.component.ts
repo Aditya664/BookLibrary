@@ -16,7 +16,7 @@ export class AppComponent  implements OnInit{
   initializeApp() {
     this.platform.ready().then(() => {
       if (this.platform.is('capacitor')) {
-        StatusBar.setOverlaysWebView({ overlay: false });
+        StatusBar.setOverlaysWebView({ overlay: true });
         StatusBar.setStyle({ style: Style.Dark });
         StatusBar.setBackgroundColor({ color: '#ffffff' });
       }

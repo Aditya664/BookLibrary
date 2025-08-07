@@ -1,5 +1,10 @@
+<ng-container *ngIf="isLoading; else mainContent">
+  <div class="spinner-fullscreen">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+</ng-container>
+<ng-template #mainContent>
 <ion-content class="book-detail-content ion-padding" [fullscreen]="false" >
-
   <div class="inner-content">
     <!-- Back Button -->
     <ion-button fill="clear" class="back-btn" (click)="goBack()">
@@ -9,17 +14,30 @@
     <!-- Book Hero Section -->
     <div class="book-hero">
       <div class="image-wrapper">
-        <img [src]="book.image" alt="{{ book.title }}" class="book-cover" />
+        <ng-container *ngIf="book.image; else textPlaceholder">
+          <img
+            [src]="book.image"
+            (error)="book.image = ''"
+            class="book-image"
+            alt="{{ book.title }}"
+          />
+        </ng-container>
+        
+        <ng-template #textPlaceholder>
+          <div
+            class="book-image placeholder"
+            [ngClass]="getGradientClass(book.title)"
+          >
+            <span>{{ getInitials(book.title) }}</span>
+          </div>
+        </ng-template>
         <div class="gradient-overlay"></div>
       </div>
       <h2 class="book-title">{{ book.title }}</h2>
       <p class="book-author">by {{ book.author }}</p>
 
       <!-- Optional Rating -->
-      <div class="rating" *ngIf="book.rating">
-        <ion-icon name="star" *ngFor="let r of [].constructor(book.rating)"></ion-icon>
-        <span>{{ book.rating }}/5</span>
-      </div>
+        <div class="rating-badge">⭐ {{ book.rating || 'N/A' }}</div>
     </div>
 
     <!-- Action Buttons -->
@@ -59,7 +77,7 @@
     <!-- Tags/Genres -->
     <div class="tags-section" *ngIf="book.genres?.length">
       <h4>Genres</h4>
-      <ion-chip *ngFor="let genre of book.genres">{{ genre }}</ion-chip>
+      <ion-chip *ngFor="let genre of book.genres">{{ genre.name }}</ion-chip>
     </div>
 
     <!-- Reviews (Optional) -->
@@ -73,3 +91,4 @@
     </div>
   </div>
 </ion-content>
+</ng-template>

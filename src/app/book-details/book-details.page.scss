@@ -1,186 +1,247 @@
 .book-detail-content {
-    --background: #f9f9f9;
+  background: #f9f9f9;
+  .inner-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding-bottom: 3rem;
+  }
+
+  .back-btn {
+    margin: 10px 0;
+    color: #0077ff;
+    font-weight: 500;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   
-    .inner-content {
-      padding: 20px 16px;
+    ion-icon {
+      font-size: 22px;
     }
-  
-    .back-btn {
-      margin-bottom: 10px;
-      color: #0b3d91;
-    }
-  
-    .book-hero {
-      text-align: center;
+  }
+
+  .book-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1rem;
+
+    .image-wrapper {
       position: relative;
-  
-      .image-wrapper {
-        position: relative;
+      width: 100%;
+      max-width: 250px;
+      aspect-ratio: 3 / 4;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      margin-bottom: 1rem;
+
+      .book-image {
         width: 100%;
-        max-width: 240px;
-        margin: 0 auto;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  
-        img {
-          width: 100%;
-          height: auto;
-          display: block;
-        }
-  
-        .gradient-overlay {
-          position: absolute;
-          bottom: 0;
-          height: 40%;
-          width: 100%;
-          background: linear-gradient(to top, #fff 30%, transparent);
-        }
+        height: 100%;
+        object-fit: cover;
+        display: block;
       }
-  
-      .book-title {
-        font-size: 22px;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-top: 12px;
-        margin-bottom: 4px;
-      }
-  
-      .book-author {
-        font-size: 14px;
-        color: #666;
-        margin-bottom: 10px;
-      }
-  
-      .rating {
+
+      .placeholder {
         display: flex;
         justify-content: center;
         align-items: center;
-        font-size: 14px;
-        color: #f2b01e;
-        gap: 2px;
-  
-        ion-icon {
-          font-size: 18px;
-        }
-  
-        span {
-          color: #333;
-          margin-left: 6px;
-        }
-      }
-    }
-  
-    .book-actions {
-      display: flex;
-      justify-content: space-around;
-      margin: 20px 0;
-  
-      ion-button {
-        flex-direction: column;
-        font-size: 12px;
-        color: #0b3d91;
-  
-        ion-icon {
-          font-size: 22px;
-          margin-bottom: 2px;
-        }
-  
-        ion-label {
-          margin-top: 2px;
-          font-size: 13px;
-          color: #0b3d91;
-        }
-      }
-    }
-  
-    .book-description-section {
-      background: #fff;
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
-      margin-bottom: 20px;
-  
-      .desc-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-  
-        h3 {
-          font-size: 18px;
-          font-weight: 600;
-          margin: 0;
-          color: #1a1a1a;
-        }
-  
-        .play-btn {
-          color: #0b3d91;
-        }
-      }
-  
-      p {
-        font-size: 14px;
-        color: #444;
-        margin-top: 12px;
-        line-height: 1.5;
-      }
-    }
-  
-    .tags-section {
-      margin-top: 10px;
-  
-      h4 {
-        font-size: 16px;
+        color: rgb(245, 245, 245);
+        font-size: 2rem;
         font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 10px;
+        text-transform: uppercase;
       }
-  
-      ion-chip {
-        margin-right: 8px;
-        margin-bottom: 8px;
-        --background: #f1f3f6;
-        --color: #0b3d91;
-        font-size: 13px;
-      }
-    }
-  
-    .reviews-section {
-      margin-top: 20px;
-  
-      h4 {
-        font-size: 16px;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 12px;
-      }
-  
-      ion-card {
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-        margin-bottom: 10px;
-  
-        ion-card-content {
-          font-size: 14px;
-          color: #333;
-  
-          strong {
-            color: #0b3d91;
-          }
-        }
+
+      .gradient-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 40%;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent);
       }
     }
-  
-    ion-button.expand-block {
-      margin-top: 20px;
-      border-radius: 30px;
+
+    .book-title {
+      font-size: 1.8rem;
       font-weight: 600;
-      --background: #0b3d91;
-      --color: #fff;
+      color: #222;
+      margin: 0.5rem 0 0.25rem;
+    }
+
+    .book-author {
+      font-size: 1.05rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+
+    .rating {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: #f39c12;
+
+      ion-icon {
+        font-size: 1.2rem;
+      }
+
+      span {
+        font-size: 0.95rem;
+        margin-left: 0.25rem;
+        color: #333;
+      }
     }
   }
-  ion-content {
-    --padding-top: env(safe-area-inset-top);
+
+  .book-actions {
+    display: flex;
+    justify-content: space-evenly;
+    margin: 1.5rem 0;
+
+    ion-button {
+      --color: #444;
+      --ripple-color: #999;
+      font-weight: 500;
+
+      ion-icon {
+        margin-bottom: 0.2rem;
+      }
+
+      ion-label {
+        font-size: 0.95rem;
+      }
+    }
   }
-  
+
+  .book-description-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    margin: 1rem 0;
+
+    .desc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .play-btn {
+        --color: #007bff;
+      }
+    }
+
+    p {
+      margin-top: 0.75rem;
+      font-size: 1rem;
+      color: #444;
+      line-height: 1.6;
+    }
+  }
+
+  ion-button[expand='block'] {
+    margin: 1rem 0;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+
+  .tags-section {
+    margin-top: 1.5rem;
+
+    h4 {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+
+    ion-chip {
+      margin: 0.25rem;
+      font-size: 0.9rem;
+    }
+  }
+
+  .reviews-section {
+    margin-top: 1.5rem;
+
+    h4 {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+
+    ion-card {
+      margin-bottom: 0.75rem;
+      border-radius: 10px;
+
+      ion-card-content {
+        font-size: 0.95rem;
+        line-height: 1.4;
+        color: #444;
+
+        strong {
+          color: #222;
+        }
+      }
+    }
+  }
+}
+
+
+.gradient-red {
+  background: linear-gradient(135deg, #ff416c, #ff4b2b);
+}
+
+.gradient-blue {
+  background: linear-gradient(135deg, #2193b0, #6dd5ed);
+}
+
+.gradient-purple {
+  background: linear-gradient(135deg, #8e2de2, #4a00e0);
+}
+
+.gradient-green {
+  background: linear-gradient(135deg, #56ab2f, #a8e063);
+}
+
+.gradient-orange {
+  background: linear-gradient(135deg, #ff8008, #ffc837);
+}
+
+.gradient-teal {
+  background: linear-gradient(135deg, #136a8a, #267871);
+}
+
+.gradient-pink {
+  background: linear-gradient(135deg, #ff758c, #ff7eb3);
+}
+
+.spinner-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--ion-background-color, #fff);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.rating-badge {
+  display: inline-block;
+  background: #ffe066;
+  color: #1a1a1a;
+  padding: 2px 8px;
+  font-size: 12px;
+  border-radius: 12px;
+  margin-top: 6px;
+}

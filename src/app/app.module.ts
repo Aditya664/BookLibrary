@@ -10,6 +10,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { AuthService } from './services/auth.service';
 
+
 @NgModule({
   declarations: [AppComponent],
   imports: [BrowserModule,HttpClientModule, IonicModule.forRoot({
