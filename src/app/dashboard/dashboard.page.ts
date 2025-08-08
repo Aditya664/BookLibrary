@@ -53,15 +53,149 @@ export class DashboardPage implements OnInit {
   searchQuery = '';
   allBooks: BookResponse[] = [];
   filteredBooks: BookResponse[] = [];
+  showSearchResults = false;
+  notificationCount = 3;
+  showNotifications = false;
+  notifications = [
+    {
+      id: 1,
+      title: 'New Book Added',
+      message: 'Atomic Habits is now available in your library',
+      time: '2 hours ago',
+      read: false
+    },
+    {
+      id: 2,
+      title: 'Reading Goal',
+      message: 'You\'re 2 books away from your monthly goal!',
+      time: '1 day ago',
+      read: false
+    },
+    {
+      id: 3,
+      title: 'Book Recommendation',
+      message: 'Based on your reading history, you might like "Deep Work"',
+      time: '3 days ago',
+      read: true
+    }
+  ];
 
   onSearch(event: any) {
     const val = event.target.value.toLowerCase();
+    this.searchQuery = val;
+
+    if (val.trim() === '') {
+      this.showSearchResults = false;
+      this.filteredBooks = [];
+      return;
+    }
 
     this.filteredBooks = this.allBooks.filter(
       (book) =>
         book.title.toLowerCase().includes(val) ||
         book.author.toLowerCase().includes(val)
     );
+    this.showSearchResults = true;
+  }
+
+  clearSearch() {
+    this.searchQuery = '';
+    this.showSearchResults = false;
+    this.filteredBooks = [];
+  }
+
+  openSearch() {
+    // Navigate to dedicated search page or expand search functionality
+    this.router.navigate(['/search']);
+  }
+
+  toggleNotifications() {
+    this.showNotifications = !this.showNotifications;
+  }
+
+  markNotificationAsRead(notificationId: number) {
+    const notification = this.notifications.find(n => n.id === notificationId);
+    if (notification) {
+      notification.read = true;
+      this.updateNotificationCount();
+    }
+  }
+
+  updateNotificationCount() {
+    this.notificationCount = this.notifications.filter(n => !n.read).length;
+  }
+
+  showFilters = false;
+  selectedGenres: string[] = [];
+  availableGenres:string[] = []
+  sortBy = 'title'; 
+  
+  openFilters() {
+    this.showFilters = true;
+  }
+  
+  closeFilters() {
+    this.showFilters = false;
+  }
+  
+  toggleGenreFilter(genre: string) {
+    const index = this.selectedGenres.indexOf(genre);
+    if (index > -1) {
+      this.selectedGenres.splice(index, 1);
+    } else {
+      this.selectedGenres.push(genre);
+    }
+    this.applyFilters();
+  }
+  
+  setSortBy(sortOption: string) {
+    this.sortBy = sortOption;
+    this.applyFilters();
+  }
+  
+  applyFilters() {
+    let filtered = [...this.allBooks];
+    
+    // Apply search query
+    if (this.searchQuery.trim()) {
+      filtered = filtered.filter(book =>
+        book.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        book.author.toLowerCase().includes(this.searchQuery.toLowerCase())
+      );
+    }
+    
+    // Apply genre filters
+    if (this.selectedGenres.length > 0) {
+      filtered = filtered.filter(book =>
+        book.genres && book.genres.some(genre => 
+          this.selectedGenres.includes(genre.name)
+        )
+      );
+    }
+    
+    // Apply sorting
+    switch (this.sortBy) {
+      case 'title':
+        filtered.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'author':
+        filtered.sort((a, b) => a.author.localeCompare(b.author));
+        break;
+      case 'rating':
+        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        break;
+      case 'recent':
+        filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        break;
+    }
+    
+    this.filteredBooks = filtered;
+  }
+  
+  clearFilters() {
+    this.selectedGenres = [];
+    this.sortBy = 'title';
+    this.applyFilters();
   }
 
   getInitials(title: string): string {
@@ -104,6 +238,7 @@ export class DashboardPage implements OnInit {
       next: ({ popularBooks, genres, recentBooks, allBooks }) => {
         this.popularBooks = popularBooks.data.slice(0, 10);
         this.genres = genres.data;
+        this.availableGenres = [...this.genres].map((genre) => genre.name);  
         this.recentBooks = recentBooks.data;
         this.isLoading = false;
         this.continueReading = this.popularBooks[0];
@@ -133,13 +268,7 @@ export class DashboardPage implements OnInit {
       : 'Reader';
   }
 
-  categories = [
-    { name: 'Fiction', icon: 'book' },
-    { name: 'Science', icon: 'flask' },
-    { name: 'Romance', icon: 'heart' },
-    { name: 'Self-help', icon: 'bulb' },
-    { name: 'History', icon: 'time' },
-  ];
+
 
   languages = ['English', 'Hindi', 'Marathi', 'Tamil', 'Gujarati'];
 
@@ -218,5 +347,23 @@ export class DashboardPage implements OnInit {
       this.fetchData();
       event.target.complete();
     }, 1500);
+  }
+
+  getTimeAgo(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInHours < 1) {
+      return 'Just now';
+    } else if (diffInHours < 24) {
+      return `${diffInHours}h ago`;
+    } else if (diffInDays < 7) {
+      return `${diffInDays}d ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
   }
 }

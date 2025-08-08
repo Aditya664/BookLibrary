@@ -1,25 +1,56 @@
 <ion-router-outlet></ion-router-outlet>
 <ion-tabs>
 
-  <ion-tab-bar slot="bottom">
-    <ion-tab-button tab="dashboard">
-      <ion-icon name="home"></ion-icon>
-      <ion-label>Home</ion-label>
+  <ion-tab-bar slot="bottom" class="stunning-tab-bar">
+    <div class="tab-background"></div>
+    <div class="tab-indicator"></div>
+    
+    <ion-tab-button tab="dashboard" class="stunning-tab-button">
+      <div class="tab-content">
+        <div class="icon-container">
+          <ion-icon name="home-outline" class="outline-icon"></ion-icon>
+          <ion-icon name="home" class="filled-icon"></ion-icon>
+          <div class="icon-glow"></div>
+        </div>
+        <ion-label>Home</ion-label>
+        <div class="tab-ripple"></div>
+      </div>
     </ion-tab-button>
 
-    <ion-tab-button tab="bookmark">
-      <ion-icon name="bookmark"></ion-icon>
-      <ion-label>Bookmark</ion-label>
+    <ion-tab-button tab="bookmark" class="stunning-tab-button">
+      <div class="tab-content">
+        <div class="icon-container">
+          <ion-icon name="library-outline" class="outline-icon"></ion-icon>
+          <ion-icon name="library" class="filled-icon"></ion-icon>
+          <div class="icon-glow"></div>
+        </div>
+        <ion-label>Library</ion-label>
+        <div class="tab-ripple"></div>
+      </div>
     </ion-tab-button>
 
-    <ion-tab-button tab="search">
-      <ion-icon name="search"></ion-icon>
-      <ion-label>Search</ion-label>
+    <ion-tab-button tab="search" class="stunning-tab-button">
+      <div class="tab-content">
+        <div class="icon-container">
+          <ion-icon name="compass-outline" class="outline-icon"></ion-icon>
+          <ion-icon name="compass" class="filled-icon"></ion-icon>
+          <div class="icon-glow"></div>
+        </div>
+        <ion-label>Discover</ion-label>
+        <div class="tab-ripple"></div>
+      </div>
     </ion-tab-button>
 
-    <ion-tab-button tab="profile">
-      <ion-icon name="person"></ion-icon>
-      <ion-label>Profile</ion-label>
+    <ion-tab-button tab="profile" class="stunning-tab-button">
+      <div class="tab-content">
+        <div class="icon-container">
+          <ion-icon name="person-circle-outline" class="outline-icon"></ion-icon>
+          <ion-icon name="person-circle" class="filled-icon"></ion-icon>
+          <div class="icon-glow"></div>
+        </div>
+        <ion-label>Profile</ion-label>
+        <div class="tab-ripple"></div>
+      </div>
     </ion-tab-button>
   </ion-tab-bar>
 </ion-tabs>

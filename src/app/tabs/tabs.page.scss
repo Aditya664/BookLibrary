@@ -1,55 +1,116 @@
-ion-tab-bar {
-    --background: #ffffff;
+// Minimal Modern Tab Bar
+ion-tabs {
+  ion-tab-bar {
+    --background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
     --border: none;
-    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.05);
-    border-radius: 16px 16px 0 0;
-    padding: 8px 0;
-    margin-bottom: env(safe-area-inset-bottom);
-    height: 70px;
-  
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    height: 80px;
+    border-radius: 24px 24px 0 0;
+    box-shadow: 
+      0 -8px 32px rgba(0, 0, 0, 0.08),
+      0 -2px 8px rgba(0, 0, 0, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    position: relative;
+    overflow: visible;
+    margin: 0 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+
     ion-tab-button {
-      --color-selected: #0077ff;
-      --color: #a0a0a0;
-  
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      transition: color 0.3s ease;
-  
-      ion-icon {
-        font-size: 24px;
-        transition: transform 0.3s ease;
+      --color: #9CA3AF;
+      --color-selected: var(--app-primary);
+      --ripple-color: rgba(99, 102, 241, 0.1);
+      position: relative;
+      height: 80px;
+      padding: 12px 8px 8px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 20px;
+      margin: 8px 4px;
+      
+      &.tab-selected {
+        --color: var(--app-primary);
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.08) 100%);
+        transform: translateY(-2px);
+        box-shadow: 
+          0 8px 24px rgba(99, 102, 241, 0.15),
+          0 4px 8px rgba(99, 102, 241, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        
+        ion-icon {
+          transform: scale(1.1);
+          filter: drop-shadow(0 2px 4px rgba(99, 102, 241, 0.2));
+        }
+        
+        .icon-filled {
+          opacity: 1;
+          transform: scale(1);
+          color: var(--app-primary);
+        }
+
+        ion-label {
+          color: var(--app-primary);
+          font-weight: 600;
+          transform: translateY(-1px);
+        }
       }
-  
+
+      &:not(.tab-selected) {
+        &::before {
+          content: '';
+          position: absolute;
+          top: 6px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 6px;
+          height: 6px;
+          background: transparent;
+          border-radius: 50%;
+          opacity: 0;
+          transition: all 0.4s ease;
+        }
+        
+        &:hover {
+          --color: #6B7280;
+          background: rgba(99, 102, 241, 0.05);
+          transform: translateY(-1px);
+          
+          &::before {
+            opacity: 0.3;
+            background: #9CA3AF;
+          }
+        }
+      }
+      
+      ion-icon {
+        font-size: 26px;
+        margin-bottom: 6px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
       ion-label {
         font-size: 12px;
         font-weight: 500;
-      }
-  
-      &.tab-selected ion-icon {
-        transform: scale(1.2);
+        margin-top: 2px;
+        letter-spacing: -0.01em;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       }
     }
   }
-  ion-tab-button.tab-selected::after {
+}
+
+// Add floating effect
+ion-tabs {
+  position: relative;
+  
+  &::before {
     content: '';
-    display: block;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #0077ff;
-    margin-top: 4px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 96px;
+    background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.02) 100%);
+    pointer-events: none;
+    z-index: -1;
   }
-  @media (prefers-color-scheme: dark) {
-    ion-tab-bar {
-      --background: #1e1e1e;
-      box-shadow: 0 -2px 12px rgba(255, 255, 255, 0.05);
-  
-      ion-tab-button {
-        --color: #888;
-        --color-selected: #66ccff;
-      }
-    }
-  }
-      
+}

@@ -1,98 +1,144 @@
-<ng-container *ngIf="isLoading; else mainContent">
+<ng-container *ngIf="isLoading">
   <div class="spinner-fullscreen">
     <ion-spinner name="crescent"></ion-spinner>
   </div>
 </ng-container>
-<ng-template #mainContent>
-  <ion-content class="book-detail-content ion-padding" [fullscreen]="false">
-    <div class="inner-content">
-      <!-- Back Button -->
-      <ion-button fill="clear" class="back-btn" (click)="goBack()">
-        <ion-icon name="arrow-back-outline"></ion-icon>
-      </ion-button>
 
+<ng-container *ngIf="!isLoading && book">
+  <ion-content class="modern-book-details ion-padding" [fullscreen]="true">
+    <!-- Status Bar -->
+    <div class="status-bar"></div>
+    
+    <!-- Modern Header -->
+    <div class="modern-header">
+      <div class="header-content">
+        <button class="modern-back-btn" (click)="goBack()">
+          <ion-icon name="arrow-back-outline"></ion-icon>
+        </button>
+        <div class="header-title">
+          <h2>Book Details</h2>
+          <p>{{ book.title }}</p>
+        </div>
+        <button class="modern-action-btn" (click)="shareBook()">
+          <ion-icon name="share-outline"></ion-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Simple Book Details Content -->
+    <div class="book-details-content">
       <!-- Book Hero Section -->
       <div class="book-hero">
-        <div class="image-wrapper">
-          <ng-container *ngIf="book.image; else textPlaceholder">
-            <img
-              [src]="book.image"
-              (error)="book.image = ''"
-              class="book-image"
-              alt="{{ book.title }}"
-            />
-          </ng-container>
-
-          <ng-template #textPlaceholder>
-            <div
-              class="book-image placeholder"
-              [ngClass]="getGradientClass(book.title)"
-            >
-              <span>{{ getInitials(book.title) }}</span>
+        <div class="hero-content">
+          <div class="book-cover-container">
+            <ng-container *ngIf="book.image && book.image !== ''; else bookPlaceholder">
+              <img 
+                [src]="book.image" 
+                [alt]="book.title"
+                class="book-cover"
+                (error)="book.image = ''"
+              />
+            </ng-container>
+            <ng-template #bookPlaceholder>
+              <div class="placeholder-cover" [ngClass]="getGradientClass(book.title)">
+                <span>{{ getInitials(book.title) }}</span>
+              </div>
+            </ng-template>
+          </div>
+          
+          <div class="book-info">
+            <div class="book-meta">
+              <h1 class="book-title">{{ book.title }}</h1>
+              <p class="book-author">by {{ book.author }}</p>
+              
+              <div class="book-rating" *ngIf="book.rating">
+                <div class="rating-stars">
+                  <ion-icon 
+                    *ngFor="let star of getStarsArray(book.rating)" 
+                    [name]="star ? 'star' : 'star-outline'"
+                    [class.filled]="star">
+                  </ion-icon>
+                </div>
+                <span class="rating-text">{{ book.rating }} / 5</span>
+              </div>
+              
+              <div class="book-details-meta" *ngIf="book.genres && book.genres.length > 0">
+                  <div *ngFor="let genre of book.genres">
+                    <span class="book-genre">
+                      {{ genre.name }}
+                    </span>
+                  </div>
+              </div>
             </div>
-          </ng-template>
-          <div class="gradient-overlay"></div>
+            
+            <div class="book-actions">
+              <button class="primary-btn" (click)="startReading()">
+                <ion-icon name="book-outline"></ion-icon>
+                <span>Read Now</span>
+              </button>
+              <button class="secondary-btn" (click)="toggleBookmark()">
+                <ion-icon name="bookmark-outline"></ion-icon>
+              </button>
+            </div>
+          </div>
         </div>
-        <h2 class="book-title">{{ book.title }}</h2>
-        <p class="book-author">by {{ book.author }}</p>
-
-        <!-- Optional Rating -->
-        <div class="rating-stars">
-          <ng-container *ngFor="let star of getStarsArray(book.rating)">
-            <ion-icon [name]="star"></ion-icon>
-          </ng-container>
-        </div>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="book-actions">
-        <ion-button fill="clear" (click)="toggleBookmark()">
-          <ion-icon
-            [name]="isBookmarked ? 'bookmark' : 'bookmark-outline'"
-          ></ion-icon>
-          <ion-label>{{ isBookmarked ? 'Bookmarked' : 'Bookmark' }}</ion-label>
-        </ion-button>
-
-        <ion-button fill="clear" (click)="openRatingModal()">
-          <ion-icon name="star-outline"></ion-icon>
-          <ion-label>Rate</ion-label>
-        </ion-button>
-
-        <ion-button fill="clear" (click)="shareBook()">
-          <ion-icon name="share-social-outline"></ion-icon>
-          <ion-label>Share</ion-label>
-        </ion-button>
       </div>
 
       <!-- Book Description -->
-      <div class="book-description-section">
-        <div class="desc-header">
-          <h3>Description</h3>
-          <ion-button fill="clear" class="play-btn">
-            <ion-icon name="play-circle-outline" slot="icon-only"></ion-icon>
-          </ion-button>
+      <div class="section-card" *ngIf="book.description">
+        <div class="section-header">
+          <h3>About this book</h3>
         </div>
-        <p>{{ book.description }}</p>
+        <p class="book-description">{{ book.description }}</p>
       </div>
 
-      <!-- Start Reading Button -->
-      <ion-button expand="block" color="primary"> Start Reading </ion-button>
-
-      <!-- Tags/Genres -->
-      <div class="tags-section" *ngIf="book.genres?.length">
-        <h4>Genres</h4>
-        <ion-chip *ngFor="let genre of book.genres">{{ genre.name }}</ion-chip>
+      <!-- Genres -->
+      <div class="section-card" *ngIf="book.genres && book.genres.length > 0">
+        <div class="section-header">
+          <h3>Genres</h3>
+        </div>
+        <div class="genre-list">
+          <span 
+            *ngFor="let genre of book.genres" 
+            class="genre-chip"
+          >
+            {{ genre.name }}
+          </span>
+        </div>
       </div>
 
-      <!-- Reviews (Optional) -->
-      <div class="reviews-section" *ngIf="book.reviews?.length">
-        <h4>User Reviews</h4>
-        <ion-card *ngFor="let review of book.reviews">
-          <ion-card-content>
-            <p><strong>{{ review.user }}</strong>: {{ review.comment }}</p>
-          </ion-card-content>
-        </ion-card>
+      <!-- Similar Books -->
+      <div class="section-card" *ngIf="similarBooks && similarBooks.length > 0">
+        <div class="section-header">
+          <h3>Similar Books</h3>
+        </div>
+        <div class="similar-books">
+          <div 
+            *ngFor="let similarBook of similarBooks" 
+            class="similar-book"
+            (click)="openBook(similarBook)"
+          >
+            <div class="similar-cover">
+              <ng-container *ngIf="similarBook.image && similarBook.image !== ''; else similarPlaceholder">
+                <img 
+                  [src]="similarBook.image" 
+                  [alt]="similarBook.title"
+                  (error)="similarBook.image = ''"
+                />
+              </ng-container>
+              <ng-template #similarPlaceholder>
+                <div class="placeholder-cover small" [ngClass]="getGradientClass(similarBook.title)">
+                  <span>{{ getInitials(similarBook.title) }}</span>
+                </div>
+              </ng-template>
+            </div>
+            <div class="similar-info">
+              <h4>{{ similarBook.title }}</h4>
+              <p>{{ similarBook.author }}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </ion-content>
-</ng-template>
+</ng-container>

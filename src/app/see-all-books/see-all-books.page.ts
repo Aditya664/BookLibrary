@@ -20,6 +20,13 @@ export class SeeAllBooksPage implements OnInit {
   filteredBooks: BookResponse[] = [];
   genres: GenreResponseWithBooks[] = [];
   selectedGenre = 'All';
+  
+  // New properties for enhanced UI
+  viewMode: 'grid' | 'list' = 'grid';
+  showFilters = false;
+  selectedGenres: string[] = [];
+  sortBy: 'title' | 'rating' | 'author' | 'recent' = 'title';
+  bookmarkedBooks: Set<number> = new Set();
 
   filterBooksByCategory() {
     if (this.selectedGenre === 'All') {
@@ -145,6 +152,116 @@ export class SeeAllBooksPage implements OnInit {
         this.isLoading = false;
       },
     });
+  }
+
+  // New methods for enhanced UI functionality
+  setViewMode(mode: 'grid' | 'list') {
+    this.viewMode = mode;
+  }
+
+  toggleFilters() {
+    this.showFilters = !this.showFilters;
+  }
+
+  get activeFiltersCount(): number {
+    return this.selectedGenres.length + (this.sortBy !== 'title' ? 1 : 0);
+  }
+
+  clearAllFilters() {
+    this.selectedGenres = [];
+    this.sortBy = 'title';
+    this.showFilters = false;
+    this.applyFilters();
+  }
+
+  toggleGenre(genreName: string) {
+    const index = this.selectedGenres.indexOf(genreName);
+    if (index > -1) {
+      this.selectedGenres.splice(index, 1);
+    } else {
+      this.selectedGenres.push(genreName);
+    }
+    this.applyFilters();
+  }
+
+  setSortBy(sortOption: 'title' | 'rating' | 'author' | 'recent') {
+    this.sortBy = sortOption;
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    let filtered = [...this.allBooks];
+
+    // Apply search query
+    if (this.searchQuery.trim()) {
+      filtered = filtered.filter(book =>
+        book.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        book.author.toLowerCase().includes(this.searchQuery.toLowerCase())
+      );
+    }
+
+    // Apply genre filters
+    if (this.selectedGenres.length > 0) {
+      filtered = filtered.filter(book =>
+        book.genres && book.genres.some(genre => 
+          this.selectedGenres.includes(genre.name)
+        )
+      );
+    }
+
+    // Apply sorting
+    switch (this.sortBy) {
+      case 'title':
+        filtered.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'author':
+        filtered.sort((a, b) => a.author.localeCompare(b.author));
+        break;
+      case 'rating':
+        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        break;
+      case 'recent':
+        filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        break;
+    }
+
+    this.filteredBooks = filtered;
+  }
+
+  trackByBookId(index: number, book: BookResponse): number {
+    return book.id;
+  }
+
+  toggleBookmark(book: BookResponse, event: Event) {
+    event.stopPropagation();
+    if (this.bookmarkedBooks.has(book.id)) {
+      this.bookmarkedBooks.delete(book.id);
+    } else {
+      this.bookmarkedBooks.add(book.id);
+    }
+  }
+
+  isBookmarked(book: BookResponse): boolean {
+    return this.bookmarkedBooks.has(book.id);
+  }
+
+  shareBook(book: BookResponse, event: Event) {
+    event.stopPropagation();
+    // Simple share functionality without external APIs
+    if (navigator.share) {
+      navigator.share({
+        title: book.title,
+        text: `Check out "${book.title}" by ${book.author}`,
+        url: window.location.href
+      });
+    } else {
+      // Fallback: copy to clipboard
+      const shareText = `Check out "${book.title}" by ${book.author}`;
+      navigator.clipboard.writeText(shareText).then(() => {
+        // Could show a toast here
+        console.log('Book info copied to clipboard');
+      });
+    }
   }
 
   ngOnInit(): void {

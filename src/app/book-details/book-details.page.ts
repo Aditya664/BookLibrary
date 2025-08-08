@@ -16,6 +16,8 @@ export class BookDetailsPage implements OnInit {
   book!: BookResponse;
   bookId!: string;
   isLoading = false;
+  similarBooks: BookResponse[] = [];
+  isBookmarked = false;
 
   constructor(
     private navCtrl: NavController,
@@ -50,8 +52,20 @@ export class BookDetailsPage implements OnInit {
     this.navCtrl.back();
   }
 
+  readBook() {
+    // Navigate to reading interface or open book reader
+    console.log('Reading book:', this.book?.title);
+    // You can implement actual reading functionality here
+  }
+
+  openBook(book: any) {
+    // Navigate to another book's details
+    this.navCtrl.navigateForward(['/book-details', book.id]);
+  }
+
   ngOnInit() {
     this.getBookDetailsById();
+    this.loadSimilarBooks();
     if (this.platform.is('capacitor')) {
       this.platform.backButton.subscribeWithPriority(10, () => {
         const canGoBack = window.history.length > 1;
@@ -103,7 +117,12 @@ export class BookDetailsPage implements OnInit {
     return gradients[hash % gradients.length];
   }
 
-  isBookmarked = false;
+  startReading() {
+    // Navigate to reading page or open book reader
+    console.log('Starting to read:', this.book.title);
+    // You could navigate to a reading page here
+    // this.navCtrl.navigateForward(`/reading/${this.book.id}`);
+  }
 
   toggleBookmark() {
     this.isBookmarked = !this.isBookmarked;
@@ -129,5 +148,12 @@ export class BookDetailsPage implements OnInit {
   openRatingModal() {
     // Ideally use a modal or alert controller here
     alert('Rating feature coming soon!');
+  }
+
+  loadSimilarBooks() {
+    // Load similar books based on genre or author
+    this.bookService.getPopularBooks().subscribe((response: ApiResponse<BookResponse[]>) => {
+      this.similarBooks = response.data.slice(0, 5); // Show first 5 as similar
+    });
   }
 }

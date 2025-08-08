@@ -1,8 +1,131 @@
-// For information on how to create your own theme, please see:
-// http://ionicframework.com/docs/theming/
-// variables.scss
-
 :root {
-    --ion-background-color: #f9f9f9; // your desired global background
-  }
+  // Modern Primary palette - Updated to more vibrant gradient-friendly colors
+  --ion-color-primary: #6366F1;
+  --ion-color-primary-rgb: 99, 102, 241;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #4F46E5;
+  --ion-color-primary-tint: #8B5CF6;
+
+  // Enhanced Secondary palette
+  --ion-color-secondary: #06B6D4;
+  --ion-color-secondary-rgb: 6, 182, 212;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #0891B2;
+  --ion-color-secondary-tint: #22D3EE;
+
+  // Accent colors for modern UI
+  --ion-color-accent: #F59E0B;
+  --ion-color-accent-rgb: 245, 158, 11;
+  --ion-color-accent-contrast: #ffffff;
+  --ion-color-accent-shade: #D97706;
+  --ion-color-accent-tint: #FBBF24;
+
+  // Modern Background and surfaces
+  --ion-background-color: #FAFBFC;
+  --ion-background-color-rgb: 250, 251, 252;
+  --ion-background-gradient: linear-gradient(135deg, #FAFBFC 0%, #F1F5F9 50%, #E2E8F0 100%);
+
+  --app-card-background: rgba(255, 255, 255, 0.85);
+  --app-card-background-hover: rgba(255, 255, 255, 0.95);
+  --app-card-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --app-card-shadow-hover: 0 20px 40px -4px rgba(0, 0, 0, 0.15), 0 8px 16px -4px rgba(0, 0, 0, 0.1);
+  --app-elevation-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  --app-surface-1: rgba(255, 255, 255, 0.7);
+  --app-surface-2: rgba(255, 255, 255, 0.9);
+
+  // Text colors
+  --ion-text-color: #1E293B;
+  --ion-text-color-rgb: 30, 41, 59;
+  --ion-text-color-secondary: #64748B; // Slightly muted text
+  --ion-text-color-placeholder: #94A3B8;
+
+  // Enhanced Typography
+  --ion-font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --ion-font-weight-light: 300;
+  --ion-font-weight-regular: 400;
+  --ion-font-weight-medium: 500;
+  --ion-font-weight-semibold: 600;
+  --ion-font-weight-bold: 700;
+  --ion-font-weight-extrabold: 800;
+  --ion-font-size-xs: 0.75rem;   // 12px
+  --ion-font-size-sm: 0.875rem;  // 14px
+  --ion-font-size-base: 1rem;    // 16px
+  --ion-font-size-lg: 1.125rem;  // 18px
+  --ion-font-size-xl: 1.25rem;   // 20px
+  --ion-font-size-2xl: 1.5rem;   // 24px
+  --ion-font-size-3xl: 1.875rem; // 30px
+  --ion-line-height-tight: 1.25;
+  --ion-line-height-base: 1.5;
+  --ion-line-height-relaxed: 1.625;
+
+  // Modern Border radius & spacing
+  --app-border-radius-xs: 4px;
+  --app-border-radius-sm: 8px;
+  --app-border-radius: 12px;
+  --app-border-radius-lg: 16px;
+  --app-border-radius-xl: 20px;
+  --app-border-radius-2xl: 24px;
+  --app-border-radius-full: 9999px;
   
+  --app-spacing-xs: 4px;
+  --app-spacing-sm: 8px;
+  --app-spacing: 12px;
+  --app-spacing-md: 16px;
+  --app-spacing-lg: 20px;
+  --app-spacing-xl: 24px;
+  --app-spacing-2xl: 32px;
+  --app-spacing-3xl: 48px;
+  
+  --app-padding: 16px;
+  --app-padding-sm: 12px;
+  --app-content-max-width: 1200px;
+
+  // Modern Buttons
+  --ion-button-border-radius: var(--app-border-radius-lg);
+  --ion-button-font-weight: var(--ion-font-weight-semibold);
+  --ion-button-box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.2);
+  --ion-button-box-shadow-hover: 0 8px 25px 0 rgba(99, 102, 241, 0.3);
+  --ion-button-hover-bg: #8B5CF6;
+  --ion-button-active-bg: #4F46E5;
+  --ion-button-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --ion-button-height: 48px;
+  --ion-button-padding: 0 24px;
+
+  // Inputs
+  --ion-input-background: #FFFFFF;
+  --ion-input-border-color: #CBD5E1;
+  --ion-input-border-radius: var(--app-border-radius-sm);
+  --ion-input-focus-border-color: var(--ion-color-primary);
+  --ion-input-placeholder-color: var(--ion-text-color-placeholder);
+  --ion-input-padding: 12px 16px;
+  --ion-input-box-shadow-focus: 0 0 0 3px rgba(79, 70, 229, 0.2);
+
+  // Cards
+  --ion-card-border-radius: var(--app-border-radius);
+  --ion-card-background: var(--app-card-background);
+  --ion-card-box-shadow: var(--app-card-shadow);
+
+  // Modals, popovers, dialogs
+  --ion-modal-background: #FFFFFF;
+  --ion-modal-border-radius: var(--app-border-radius);
+  --ion-modal-shadow: var(--app-elevation-shadow);
+
+  // Transitions
+  --app-transition-timing: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // Modern Gradients
+  --app-primary-gradient: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-tint) 100%);
+  --app-secondary-gradient: linear-gradient(135deg, var(--ion-color-secondary) 0%, var(--ion-color-secondary-tint) 100%);
+  --app-accent-gradient: linear-gradient(135deg, var(--ion-color-accent) 0%, var(--ion-color-accent-tint) 100%);
+  --app-glass-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%);
+  --app-shimmer-gradient: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  
+  // Modern animations
+  --app-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --app-transition-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --app-transition-slow: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --app-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}

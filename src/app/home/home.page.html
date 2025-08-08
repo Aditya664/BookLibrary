@@ -1,39 +1,176 @@
-<ion-content class="ion-padding">
-  <div class="welcome">
-    <h2>Hello, Jelly!</h2>
-    <p>Which book suits your current mood?</p>
-  </div>
-
-  <ion-card class="continue-card">
-    <ion-card-content>
-      <p class="reminder">Remember, Jelly. You have an unfinished book since July 30, 2021</p>
-      <a class="continue-link">Continue reading</a>
-
-      <div class="book-info">
-        <img src="assets/images/ther-melian.jpg" alt="Book Cover" />
-        <div>
-          <h3>Ther Melian: Discord</h3>
-          <p>Book 3 of 4</p>
+<ion-content class="modern-home" [fullscreen]="true">
+  <!-- Modern Header with Status Bar -->
+  <div class="status-bar"></div>
+  <div class="modern-header">
+    <div class="header-content">
+      <div class="user-info">
+        <div class="avatar-container">
+          <ion-avatar class="modern-avatar">
+            <img
+              src="https://dt2sdf0db8zob.cloudfront.net/wp-content/uploads/2019/12/9-Best-Online-Avatars-and-How-to-Make-Your-Own-for-Free-image21.jpg"
+            />
+          </ion-avatar>
+          <div class="status-indicator"></div>
+        </div>
+        <div class="welcome-section">
+          <h1 class="greeting">Hello, Jelly!</h1>
+          <p class="subtitle">Which book suits your current mood?</p>
         </div>
       </div>
-    </ion-card-content>
-  </ion-card>
+      <div class="header-actions">
+        <button class="notification-btn">
+          <ion-icon name="notifications-outline"></ion-icon>
+          <span class="notification-badge">2</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
-  <ion-segment scrollable value="fantasy" class="genre-tabs">
-    <ion-segment-button value="fantasy">Fantasy</ion-segment-button>
-    <ion-segment-button value="romance">Romance</ion-segment-button>
-    <ion-segment-button value="mystery">Mystery & Drama</ion-segment-button>
-  </ion-segment>
+  <!-- Content Grid -->
+  <div class="content-grid">
+    <!-- Continue Reading Section -->
+    <div class="section-card continue-section">
+      <div class="section-header">
+        <h2>Continue Reading</h2>
+        <div class="progress-indicator">75%</div>
+      </div>
+      <div class="continue-card">
+        <div class="book-cover-large">
+          <img
+            src="assets/images/ther-melian.jpg"
+            alt="Ther Melian: Discord"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+          />
+          <div class="placeholder-cover gradient-purple" style="display: none;">
+            <span>TM</span>
+          </div>
+          <div class="play-overlay">
+            <ion-icon name="play-circle"></ion-icon>
+          </div>
+        </div>
+        <div class="continue-details">
+          <h3>Ther Melian: Discord</h3>
+          <p>Book 3 of 4</p>
+          <div class="progress-section">
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 75%"></div>
+            </div>
+            <span class="progress-text">Chapter 12 of 16</span>
+          </div>
+          <p class="reminder-text">Unfinished since July 30, 2021</p>
+        </div>
+      </div>
+    </div>
 
-  <div class="book-list">
-    <ion-scroll scrollX>
-      <ion-card *ngFor="let book of books" class="book-card">
-        <img [src]="book.image" />
-        <ion-card-content>
-          <h4>{{ book.title }}</h4>
-          <p>{{ book.author }}</p>
-        </ion-card-content>
-      </ion-card>
-    </ion-scroll>
+    <!-- Genre Categories -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2>Browse Genres</h2>
+        <ion-button fill="clear" class="see-all-btn">
+          <span>See all</span>
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </ion-button>
+      </div>
+      <div class="genre-scroll">
+        <div class="genre-chip active">
+          <ion-icon name="sparkles-outline"></ion-icon>
+          <span>Fantasy</span>
+        </div>
+        <div class="genre-chip">
+          <ion-icon name="heart-outline"></ion-icon>
+          <span>Romance</span>
+        </div>
+        <div class="genre-chip">
+          <ion-icon name="eye-outline"></ion-icon>
+          <span>Mystery</span>
+        </div>
+        <div class="genre-chip">
+          <ion-icon name="rocket-outline"></ion-icon>
+          <span>Sci-Fi</span>
+        </div>
+        <div class="genre-chip">
+          <ion-icon name="book-outline"></ion-icon>
+          <span>Biography</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommended Books -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2>Recommended for You</h2>
+        <ion-button fill="clear" class="see-all-btn">
+          <span>View all</span>
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </ion-button>
+      </div>
+      <div class="books-carousel">
+        <div
+          class="modern-book-card"
+          *ngFor="let book of books"
+        >
+          <div class="book-cover">
+            <ng-container *ngIf="book.image; else textPlaceholder">
+              <img
+                [src]="book.image"
+                (error)="book.image = ''"
+                alt="{{ book.title }}"
+              />
+            </ng-container>
+            <ng-template #textPlaceholder>
+              <div class="placeholder-cover gradient-blue">
+                <span>{{ book.title.charAt(0) }}{{ book.author.charAt(0) }}</span>
+              </div>
+            </ng-template>
+            <div class="book-overlay">
+              <ion-icon name="play-circle-outline"></ion-icon>
+            </div>
+          </div>
+          <div class="book-info">
+            <h4>{{ book.title }}</h4>
+            <p>{{ book.author }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2>Quick Actions</h2>
+      </div>
+      <div class="quick-actions">
+        <div class="action-card">
+          <div class="action-icon">
+            <ion-icon name="bookmark-outline"></ion-icon>
+          </div>
+          <div class="action-info">
+            <h4>My Library</h4>
+            <p>View saved books</p>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="action-arrow"></ion-icon>
+        </div>
+        <div class="action-card">
+          <div class="action-icon">
+            <ion-icon name="search-outline"></ion-icon>
+          </div>
+          <div class="action-info">
+            <h4>Discover</h4>
+            <p>Find new books</p>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="action-arrow"></ion-icon>
+        </div>
+        <div class="action-card">
+          <div class="action-icon">
+            <ion-icon name="trending-up-outline"></ion-icon>
+          </div>
+          <div class="action-info">
+            <h4>Trending</h4>
+            <p>Popular books</p>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="action-arrow"></ion-icon>
+        </div>
+      </div>
+    </div>
   </div>
 </ion-content>

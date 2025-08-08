@@ -1,12 +1,7 @@
 /*
- * App Global CSS
+ * Modern BookLibrary Global CSS
  * ----------------------------------------------------------------------------
- * Put style rules here that you want to apply globally. These styles are for
- * the entire app and not just one component. Additionally, this file can be
- * used as an entry point to import other CSS/Sass files to be included in the
- * output CSS.
- * For more information on global stylesheets, visit the documentation:
- * https://ionicframework.com/docs/layout/global-stylesheets
+ * Enhanced global styles for modern UI experience
  */
 
 /* Core CSS required for Ionic components to work properly */
@@ -35,19 +30,196 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
+
+// Modern Global Styles
 ion-content {
-  --background: var(--ion-background-color);
+  --background: var(--ion-background-gradient);
 }
-/* global.scss */
+/* Modern Global Enhancements */
 html,
 body {
-  background-color: var(--ion-background-color);
+  background: var(--ion-background-gradient);
+  font-family: var(--ion-font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 ion-content {
-  --padding-top: 45px !important;
+  --padding-top: calc(var(--app-spacing-2xl) + var(--ion-safe-area-top, 0px));
 }
 
-ion-content {
-  --padding-top: calc(30px + var(--ion-safe-area-top, 0px));
+// Modern Button Enhancements
+ion-button {
+  --border-radius: var(--ion-button-border-radius);
+  --box-shadow: var(--ion-button-box-shadow);
+  --transition: var(--ion-button-transition);
+  font-weight: var(--ion-button-font-weight);
+  height: var(--ion-button-height);
+  
+  &:hover {
+    --box-shadow: var(--ion-button-box-shadow-hover);
+    transform: translateY(-1px);
+  }
+  
+  &.button-fill-solid {
+    --background: var(--app-primary-gradient);
+  }
+}
+
+// Enhanced Card Styling
+ion-card {
+  --background: var(--app-card-background);
+  --box-shadow: var(--app-card-shadow);
+  border-radius: var(--app-border-radius-lg);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: var(--app-transition-base);
+  
+  &:hover {
+    --background: var(--app-card-background-hover);
+    --box-shadow: var(--app-card-shadow-hover);
+    transform: translateY(-2px);
+  }
+}
+
+// Modern Input Styling
+ion-searchbar {
+  --background: var(--app-surface-2);
+  --border-radius: var(--app-border-radius-xl);
+  --box-shadow: var(--app-card-shadow);
+  --color: var(--ion-text-color);
+  --placeholder-color: var(--ion-text-color-placeholder);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+// Enhanced List Items
+ion-item {
+  --background: transparent;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --inner-padding-end: var(--app-spacing-lg);
+  --padding-start: var(--app-spacing-lg);
+  
+  &.item-interactive:hover {
+    --background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+// Modern Tab Bar
+ion-tab-bar {
+  --background: var(--app-surface-2);
+  --border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20px);
+  border-radius: var(--app-border-radius-2xl) var(--app-border-radius-2xl) 0 0;
+  margin: 0 var(--app-spacing-md) 0 var(--app-spacing-md);
+  
+  ion-tab-button {
+    --color: var(--ion-text-color-secondary);
+    --color-selected: var(--ion-color-primary);
+    --ripple-color: var(--ion-color-primary);
+    transition: var(--app-transition-base);
+    
+    &.tab-selected {
+      transform: scale(1.05);
+      
+      ion-icon {
+        filter: drop-shadow(0 2px 4px rgba(99, 102, 241, 0.3));
+      }
+    }
+    
+    ion-icon {
+      transition: var(--app-transition-base);
+    }
+  }
+}
+
+// Utility Classes
+.glass-effect {
+  background: var(--app-glass-gradient);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modern-shadow {
+  box-shadow: var(--app-card-shadow);
+}
+
+.hover-lift {
+  transition: var(--app-transition-base);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--app-card-shadow-hover);
+  }
+}
+
+.shimmer {
+  background: var(--app-shimmer-gradient);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// Smooth scrolling
+* {
+  scroll-behavior: smooth;
+}
+
+// Enhanced focus states
+*:focus {
+  outline: 2px solid var(--ion-color-primary);
+  outline-offset: 2px;
+  border-radius: var(--app-border-radius-sm);
+}
+
+
+
+.spinner-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--ion-background-color, #fff);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+// Gradient Background Classes for Placeholders
+.gradient-red {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.gradient-blue {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.gradient-purple {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.gradient-green {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.gradient-orange {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+}
+
+.gradient-teal {
+  background: linear-gradient(135deg, #14b8a6, #0d9488);
+}
+
+.gradient-pink {
+  background: linear-gradient(135deg, #ec4899, #db2777);
 }

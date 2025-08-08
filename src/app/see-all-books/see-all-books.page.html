@@ -5,7 +5,7 @@
 </ng-container>
 
 <ng-template #mainContent>
-  <ion-content fullscreen="false" class="see-all-books-page ion-padding">
+  <ion-content fullscreen="false" class="modern-see-all-books ion-padding">
     <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
       <ion-refresher-content
         pullingIcon="sparkles-outline"
@@ -14,76 +14,211 @@
         refreshingText="Refreshing content..."
       ></ion-refresher-content>
     </ion-refresher>
-    <!-- Back Button -->
-    <ion-button fill="clear" class="back-btn" (click)="goBack()">
-      <ion-icon name="arrow-back-outline"></ion-icon>
-    </ion-button>
-
-    <!-- Searchbar -->
-    <ion-searchbar
-      [(ngModel)]="searchQuery"
-      (ionInput)="onSearch($event)"
-      placeholder="Search books..."
-      class="custom-searchbar"
-      show-clear-button="focus"
-    ></ion-searchbar>
-
-    <!-- genre-tabs.component.html -->
-    <div class="genre-tabs-container">
-      <ion-segment
-        [(ngModel)]="selectedGenre"
-        (ionChange)="filterBooksByCategory()"
-        scrollable
-        class="custom-segment"
-      >
-        <ion-segment-button
-          *ngFor="let cat of genres"
-          [value]="cat.name"
-          class="custom-segment-button"
-        >
-          {{ cat.name }}
-        </ion-segment-button>
-      </ion-segment>
+    
+    <!-- Modern Header -->
+    <div class="modern-header">
+      <div class="header-top">
+        <button class="modern-back-btn" (click)="goBack()">
+          <ion-icon name="arrow-back-outline"></ion-icon>
+        </button>
+        <div class="header-title">
+          <h1>All Books</h1>
+          <p>{{ (filteredBooks.length ? filteredBooks : allBooks).length }} books available</p>
+        </div>
+        <div class="view-toggle">
+          <button 
+            class="toggle-btn" 
+            [class.active]="viewMode === 'grid'"
+            (click)="setViewMode('grid')">
+            <ion-icon name="grid-outline"></ion-icon>
+          </button>
+          <button 
+            class="toggle-btn" 
+            [class.active]="viewMode === 'list'"
+            (click)="setViewMode('list')">
+            <ion-icon name="list-outline"></ion-icon>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Enhanced Search -->
+      <div class="search-container">
+        <ion-searchbar
+          [(ngModel)]="searchQuery"
+          (ionInput)="onSearch($event)"
+          placeholder="Search by title, author, or genre..."
+          class="modern-searchbar"
+          show-clear-button="focus"
+        ></ion-searchbar>
+        <button class="filter-toggle-btn" (click)="toggleFilters()">
+          <ion-icon name="options-outline"></ion-icon>
+          <span class="filter-count" *ngIf="activeFiltersCount > 0">{{ activeFiltersCount }}</span>
+        </button>
+      </div>
     </div>
 
-    <!-- Book Grid -->
-    <div class="book-grid ion-padding-horizontal">
-      <div
-        class="book-card"
-        *ngFor="let book of filteredBooks.length ? filteredBooks : allBooks"
-        (click)="openBook(book)"
-      >
-        <div class="image-wrapper">
-          <ng-container *ngIf="book.image; else textPlaceholder">
-            <img
-              [src]="book.image"
-              (error)="book.image = ''"
-              class="book-image"
-              alt="{{ book.title }}"
-            />
-          </ng-container>
-
-          <ng-template #textPlaceholder>
-            <div
-              class="book-image placeholder"
-              [ngClass]="getGradientClass(book.title)"
-            >
-              <span>{{ getInitials(book.title) }}</span>
-            </div>
-          </ng-template>
-
-          <div class="gradient-overlay"></div>
+    <!-- Advanced Filters Panel -->
+    <div class="filters-panel" [class.expanded]="showFilters">
+      <div class="filters-header">
+        <h3>Filters & Sort</h3>
+        <button class="clear-filters-btn" (click)="clearAllFilters()" *ngIf="activeFiltersCount > 0">
+          Clear All
+        </button>
+      </div>
+      
+      <!-- Genre Filter -->
+      <div class="filter-section">
+        <h4>Genres</h4>
+        <div class="genre-chips">
+          <button 
+            *ngFor="let genre of genres" 
+            class="genre-chip"
+            [class.active]="selectedGenres.includes(genre.name)"
+            (click)="toggleGenre(genre.name)">
+            {{ genre.name }}
+          </button>
         </div>
+      </div>
+      
+      <!-- Sort Options -->
+      <div class="filter-section">
+        <h4>Sort By</h4>
+        <div class="sort-options">
+          <button 
+            class="sort-option"
+            [class.active]="sortBy === 'title'"
+            (click)="setSortBy('title')">
+            <ion-icon name="text-outline"></ion-icon>
+            <span>Title A-Z</span>
+          </button>
+          <button 
+            class="sort-option"
+            [class.active]="sortBy === 'rating'"
+            (click)="setSortBy('rating')">
+            <ion-icon name="star-outline"></ion-icon>
+            <span>Rating</span>
+          </button>
+          <button 
+            class="sort-option"
+            [class.active]="sortBy === 'author'"
+            (click)="setSortBy('author')">
+            <ion-icon name="person-outline"></ion-icon>
+            <span>Author</span>
+          </button>
+          <button 
+            class="sort-option"
+            [class.active]="sortBy === 'recent'"
+            (click)="setSortBy('recent')">
+            <ion-icon name="time-outline"></ion-icon>
+            <span>Recently Added</span>
+          </button>
+        </div>
+      </div>
+    </div>
 
-        <div class="book-info">
-          <h4>{{ book.title }}</h4>
-          <p>{{ book.author }}</p>
-          <div class="rating-stars">
-            <ng-container *ngFor="let star of getStarsArray(book.rating)">
-              <ion-icon [name]="star"></ion-icon>
+    <!-- Books Display -->
+    <div class="books-container" [class.list-view]="viewMode === 'list'" [class.grid-view]="viewMode === 'grid'">
+      <!-- Grid View -->
+      <div class="modern-book-grid" *ngIf="viewMode === 'grid'">
+        <div
+          class="modern-book-card"
+          *ngFor="let book of filteredBooks.length ? filteredBooks : allBooks; trackBy: trackByBookId"
+          (click)="openBook(book)"
+        >
+          <div class="book-cover-container">
+            <ng-container *ngIf="book.image; else gridPlaceholder">
+              <img
+                [src]="book.image"
+                (error)="book.image = ''"
+                class="book-cover"
+                alt="{{ book.title }}"
+                loading="lazy"
+              />
             </ng-container>
+            <ng-template #gridPlaceholder>
+              <div class="book-placeholder" [ngClass]="getGradientClass(book.title)">
+                <span>{{ getInitials(book.title) }}</span>
+              </div>
+            </ng-template>
+            <div class="book-overlay">
+              <div class="quick-actions">
+                <button class="quick-action-btn" (click)="toggleBookmark(book, $event)">
+                  <ion-icon [name]="isBookmarked(book) ? 'bookmark' : 'bookmark-outline'"></ion-icon>
+                </button>
+                <button class="quick-action-btn" (click)="shareBook(book, $event)">
+                  <ion-icon name="share-outline"></ion-icon>
+                </button>
+              </div>
+              <div class="rating-badge" *ngIf="book.rating">
+                <ion-icon name="star"></ion-icon>
+                <span>{{ book.rating }}</span>
+              </div>
+            </div>
           </div>
-                  </div>
+          <div class="book-details">
+            <h4>{{ book.title }}</h4>
+            <p>{{ book.author }}</p>
+            <div class="book-meta">
+              <div class="rating-stars">
+                <ion-icon 
+                  *ngFor="let star of [1,2,3,4,5]" 
+                  [name]="star <= (book.rating || 0) ? 'star' : 'star-outline'"
+                  [class.filled]="star <= (book.rating || 0)">
+                </ion-icon>
+              </div>
+              <span class="genre-tag" *ngIf="book.genres && book.genres[0]">{{ book.genres[0].name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- List View -->
+      <div class="modern-book-list" *ngIf="viewMode === 'list'">
+        <div
+          class="modern-book-list-item"
+          *ngFor="let book of filteredBooks.length ? filteredBooks : allBooks; trackBy: trackByBookId"
+          (click)="openBook(book)"
+        >
+          <div class="book-cover-small">
+            <ng-container *ngIf="book.image; else listPlaceholder">
+              <img [src]="book.image" [alt]="book.title" loading="lazy" />
+            </ng-container>
+            <ng-template #listPlaceholder>
+              <div class="book-placeholder small" [ngClass]="getGradientClass(book.title)">
+                <span>{{ getInitials(book.title) }}</span>
+              </div>
+            </ng-template>
+          </div>
+          <div class="book-info-expanded">
+            <div class="book-main-info">
+              <h4>{{ book.title }}</h4>
+              <p>by {{ book.author }}</p>
+              <div class="book-description" *ngIf="book.description">
+                {{ book.description | slice:0:120 }}{{ book.description.length > 120 ? '...' : '' }}
+              </div>
+            </div>
+            <div class="book-actions">
+              <div class="rating-info">
+                <div class="rating-stars">
+                  <ion-icon 
+                    *ngFor="let star of [1,2,3,4,5]" 
+                    [name]="star <= (book.rating || 0) ? 'star' : 'star-outline'"
+                    [class.filled]="star <= (book.rating || 0)">
+                  </ion-icon>
+                </div>
+                <span class="rating-text">{{ book.rating || 0 }}</span>
+              </div>
+              <div class="action-buttons">
+                <button class="action-btn" (click)="toggleBookmark(book, $event)">
+                  <ion-icon [name]="isBookmarked(book) ? 'bookmark' : 'bookmark-outline'"></ion-icon>
+                </button>
+                <button class="action-btn" (click)="shareBook(book, $event)">
+                  <ion-icon name="share-outline"></ion-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </ion-content>
