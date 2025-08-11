@@ -122,7 +122,6 @@ export class SeeAllBooksPage implements OnInit {
   ) {}
 
   openBook(book: any) {
-    debugger;
     this.navCtrl.navigateRoot(['/book-detail', book.id]);
   }
 
@@ -265,16 +264,7 @@ export class SeeAllBooksPage implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.platform.is('capacitor')) {
-      this.platform.backButton.subscribeWithPriority(10, () => {
-        const canGoBack = window.history.length > 1;
-        if (canGoBack) {
-          this.goBack();
-        } else {
-          App.exitApp();
-        }
-      });
-    }
+    // Hardware back button is now handled globally in tabs.page.ts
     this.fetchData();
   }
 }

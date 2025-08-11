@@ -29,7 +29,7 @@
             <div class="status-indicator"></div>
           </div>
           <div class="welcome-section">
-            <h1 class="greeting">Good evening, {{ firstName }}!</h1>
+            <h1 class="greeting">Good evening, {{ loggedInUserName }}!</h1>
             <p class="subtitle">Ready to dive into a new adventure?</p>
           </div>
         </div>
@@ -90,7 +90,7 @@
             <ion-icon name="library-outline"></ion-icon>
           </div>
           <div class="stat-info">
-            <h3>{{ (popularBooks ?? [])?.length || 0 }}</h3>
+            <h3>{{ (allBooks ?? [])?.length || 0 }}</h3>
             <p>Books</p>
           </div>
         </div>
@@ -137,7 +137,7 @@
       <div class="section-card">
         <div class="section-header">
           <h2>Trending Now</h2>
-          <ion-button fill="clear" routerLink="/see-all-books" class="see-all-btn">
+          <ion-button fill="clear" (click)="seeAllBooks()" class="see-all-btn">
             <span>View all</span>
             <ion-icon name="chevron-forward-outline"></ion-icon>
           </ion-button>
@@ -187,34 +187,33 @@
       <div class="section-card continue-section">
         <div class="section-header">
           <h2>Continue Reading</h2>
-          <div class="progress-indicator">75%</div>
+          <ion-button fill="clear" size="small" (click)="seeAllBooks()">
+            See All
+            <ion-icon name="chevron-forward" slot="end"></ion-icon>
+          </ion-button>
         </div>
-        <div class="continue-card" (click)="openBook(continueReading)">
-          <div class="book-cover-large">
-            <ng-container *ngIf="continueReading.image; else textPlaceholder">
-              <img
-                [src]="continueReading.image"
-                (error)="continueReading.image = ''"
-                alt="{{ continueReading.title }}"
-              />
-            </ng-container>
-            <ng-template #textPlaceholder>
-              <div class="placeholder-cover" [ngClass]="getGradientClass(continueReading.title)">
-                <span>{{ getInitials(continueReading.title) }}</span>
-              </div>
-            </ng-template>
-            <div class="play-overlay">
-              <ion-icon name="play-circle"></ion-icon>
+        <div class="continue-reading-grid">
+          <div class="continue-card">
+            <div class="book-cover-large">
+              <ng-container *ngIf="continueReading?.book?.image && continueReading?.book?.image !== ''; else textPlaceholder">
+                <img [src]="continueReading?.book?.image"  alt="{{ continueReading?.book?.title }}" />
+              </ng-container>
+              <ng-template #textPlaceholder>
+                <div class="placeholder-cover" [ngClass]="getGradientClass(continueReading?.book?.title ?? '')">
+                  <span>{{ getInitials(continueReading?.book?.title ?? '') }}</span>
+                </div>
+              </ng-template>
             </div>
-          </div>
-          <div class="continue-details">
-            <h3>{{ continueReading.title }}</h3>
-            <p>{{ continueReading.author }}</p>
-            <div class="progress-section">
+            <div class="book-info">
+              <h3>{{ continueReading?.book?.title }}</h3>
+              <p class="author">{{ continueReading?.book?.author }}</p>
               <div class="progress-bar">
-                <div class="progress-fill" style="width: 75%"></div>
+                <div class="progress" [style.width.%]="continueReading?.percentage"></div>
               </div>
-              <span class="progress-text">Chapter 12 of 16</span>
+              <p class="progress-text">{{ continueReading?.currentPage }} of {{ continueReading?.totalPages}} pages ({{ continueReading?.percentage || 0 }}%)</p>
+              <button class="continue-btn" (click)="openBook(continueReading?.book); $event.stopPropagation()">
+                Continue Reading
+              </button>
             </div>
           </div>
         </div>

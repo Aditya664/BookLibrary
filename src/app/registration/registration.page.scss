@@ -1,11 +1,27 @@
 .registration-page {
   --background: #f9f9f9;
+  
+  .status-bar {
+    height: var(--app-status-bar-height);
+    background: var(--background, #f9f9f9);
+    width: 100%;
+    position: relative;
+    z-index: 1000;
+  }
 
   .registration-container {
     max-width: 400px;
     margin: auto;
     text-align: center;
     padding: 20px 16px;
+    
+    @media (max-width: 768px) {
+      padding: 16px 12px;
+    }
+    
+    @media (max-width: 480px) {
+      padding: 12px 8px;
+    }
   }
 
   .illustration img {

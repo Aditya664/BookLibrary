@@ -24,7 +24,7 @@ export interface ApiResponse<T> {
     description: string;
     genres: GenreResponse[];
     reviews: ReviewResponse[];
-    pdfFile?: Uint8Array; // or `ArrayBuffer` if you're dealing with binary data in Angular
+    pdfFile?: Uint8Array | string; // Can be either Uint8Array or base64 string from API
     pdfFileName?: string;
     createdAt: string; // ISO string when received from API
   }
@@ -38,4 +38,32 @@ export interface ApiResponse<T> {
     user: string;
     comment: string;
   }
-  
+
+  export interface FavoriteRequestDto {
+    userId: number;
+    bookId: number;
+  }
+
+  export interface FavoriteResponseDto {
+    id: number;
+    userId: number;
+    bookId: number;
+    book: BookResponse;
+    createdAt: string;
+  }
+
+  export interface ReadingProgressRequestDto {
+    bookId: number;
+    currentPage: number;
+    totalPages: number;
+  }
+
+  export interface ReadingProgressResponseDto {
+    bookId: number;
+    userId: number;
+    currentPage: number;
+    totalPages: number;
+    percentage: number;
+    lastUpdated: string;
+    book: BookResponse;
+  }

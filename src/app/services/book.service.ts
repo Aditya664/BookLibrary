@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
-import { ApiResponse, BookResponse, GenreResponseWithBooks } from '../Model/ApiResponse';
+import { ApiResponse, BookResponse, GenreResponseWithBooks, FavoriteRequestDto, FavoriteResponseDto, ReadingProgressRequestDto, ReadingProgressResponseDto } from '../Model/ApiResponse';
 
 @Injectable({providedIn: 'root'})
 
@@ -50,5 +50,32 @@ export class BookService {
       getBookById(id: string): Observable<ApiResponse<BookResponse>> {
         return this.http.get<ApiResponse<BookResponse>>(`${this.apiUrl}/api/Books/${id}`);
       }
-    
+
+      getBooksByGenreAsync(genreId: number): Observable<ApiResponse<BookResponse[]>> {
+        return this.http.get<ApiResponse<BookResponse[]>>(`${this.apiUrl}/api/Books/genre/${genreId}`);
+      }
+
+      addBookToFavoritesAsync(request: FavoriteRequestDto): Observable<ApiResponse<FavoriteResponseDto>> {
+        return this.http.post<ApiResponse<FavoriteResponseDto>>(`${this.apiUrl}/api/Books/favorites`, request);
+      }
+
+      getUserFavoritesAsync(userId: string): Observable<ApiResponse<FavoriteResponseDto[]>> {
+        return this.http.get<ApiResponse<FavoriteResponseDto[]>>(`${this.apiUrl}/api/Books/user/${userId}/favorites`);
+      }
+
+      updateReadingProgress(userId: string, request: ReadingProgressRequestDto): Observable<ApiResponse<ReadingProgressResponseDto>> {
+        return this.http.put<ApiResponse<ReadingProgressResponseDto>>(`${this.apiUrl}/api/Books/user/${userId}/reading-progress`, request);
+      }
+
+      getReadingProgress(userId: string, bookId: number): Observable<ApiResponse<ReadingProgressResponseDto>> {
+        return this.http.get<ApiResponse<ReadingProgressResponseDto>>(`${this.apiUrl}/api/Books/user/${userId}/reading-progress/${bookId}`);
+      }
+
+      getUserReadingProgress(userId: string): Observable<ApiResponse<ReadingProgressResponseDto[]>> {
+        return this.http.get<ApiResponse<ReadingProgressResponseDto[]>>(`${this.apiUrl}/api/Books/user/${userId}/reading-progress`);
+      }
+
+      getLastReadBook(userId: string): Observable<ApiResponse<ReadingProgressResponseDto>> {
+        return this.http.get<ApiResponse<ReadingProgressResponseDto>>(`${this.apiUrl}/api/Books/user/${userId}/reading-progress`);
+      }
 }

@@ -1,0 +1,241 @@
+<ion-content [fullscreen]="true" class="pdf-reader" [class.night-mode]="nightMode" [class.fullscreen]="isFullscreen">
+  <!-- Status Bar -->
+  <div class="status-bar"></div>
+
+  <!-- Header Controls -->
+  <div class="reader-header" [class.hidden]="!showControls || isFullscreen">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button fill="clear" (click)="goBack()">
+          <ion-icon name="arrow-back-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+      
+      <ion-title>{{ book ? book.title : 'Reading...' }}</ion-title>
+      
+      <ion-buttons slot="end">
+        <ion-button fill="clear" (click)="toggleBookmark()">
+          <ion-icon [name]="isBookmarked() ? 'bookmark' : 'bookmark-outline'" 
+                    [color]="isBookmarked() ? 'primary' : undefined"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" (click)="toggleSettings()">
+          <ion-icon name="settings-outline"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" (click)="toggleFullscreen()">
+          <ion-icon [name]="isFullscreen ? 'contract-outline' : 'expand-outline'"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </div>
+
+  <!-- PDF Container -->
+  <div class="pdf-container" #pdfContainer [style.background-color]="backgroundColor">
+    <!-- Loading Spinner -->
+    <div class="loading-container" *ngIf="isLoading">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading PDF...</p>
+    </div>
+
+    <!-- PDF Canvas -->
+    <canvas 
+      #pdfCanvas 
+      class="pdf-canvas"
+      (click)="onCanvasClick($event)"
+      *ngIf="!isLoading && pdfDoc">
+    </canvas>
+
+    <!-- No PDF Message -->
+    <div class="no-pdf-message" *ngIf="!isLoading && !pdfDoc">
+      <ion-icon name="document-outline" size="large"></ion-icon>
+      <h3>No PDF Available</h3>
+      <p>This book doesn't have a PDF file available for reading.</p>
+      <ion-button fill="outline" (click)="goBack()">
+        <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
+        Go Back
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Bottom Controls -->
+  <div class="reader-controls" [class.hidden]="!showControls || isFullscreen">
+    <!-- Page Navigation -->
+    <div class="page-controls">
+      <ion-button 
+        fill="clear" 
+        size="small" 
+        (click)="previousPage()" 
+        [disabled]="currentPage <= 1">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </ion-button>
+      
+      <div class="page-info">
+        <span>{{ currentPage }} / {{ totalPages }}</span>
+      </div>
+      
+      <ion-button 
+        fill="clear" 
+        size="small" 
+        (click)="nextPage()" 
+        [disabled]="currentPage >= totalPages">
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+      </ion-button>
+    </div>
+
+    <!-- Zoom Controls -->
+    <div class="zoom-controls">
+      <ion-button fill="clear" size="small" (click)="zoomOut()">
+        <ion-icon name="remove-outline"></ion-icon>
+      </ion-button>
+      
+      <span class="zoom-level">{{ (scale * 100).toFixed(0) }}%</span>
+      
+      <ion-button fill="clear" size="small" (click)="zoomIn()">
+        <ion-icon name="add-outline"></ion-icon>
+      </ion-button>
+      
+      <ion-button fill="clear" size="small" (click)="resetZoom()">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </ion-button>
+      
+      <ion-button fill="clear" size="small" (click)="fitToWidth()">
+        <ion-icon name="resize-outline"></ion-icon>
+      </ion-button>
+      
+      <ion-button fill="clear" size="small" (click)="fitToHeight()">
+        <ion-icon name="contract-outline"></ion-icon>
+      </ion-button>
+    </div>
+
+    <!-- Search Controls -->
+    <div class="search-controls" *ngIf="searchResults.length > 0">
+      <ion-button fill="clear" size="small" (click)="previousSearchResult()">
+        <ion-icon name="chevron-up-outline"></ion-icon>
+      </ion-button>
+      
+      <span class="search-info">{{ currentSearchIndex + 1 }} / {{ searchResults.length }}</span>
+      
+      <ion-button fill="clear" size="small" (click)="nextSearchResult()">
+        <ion-icon name="chevron-down-outline"></ion-icon>
+      </ion-button>
+    </div>
+
+    <!-- Additional Controls -->
+    <div class="additional-controls">
+      <ion-button fill="clear" size="small" (click)="rotateLeft()">
+        <ion-icon name="refresh-outline" style="transform: scaleX(-1)"></ion-icon>
+      </ion-button>
+      
+      <ion-button fill="clear" size="small" (click)="rotateRight()">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </ion-button>
+      
+      <ion-button fill="clear" size="small" (click)="toggleNightMode()">
+        <ion-icon [name]="nightMode ? 'sunny-outline' : 'moon-outline'"></ion-icon>
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Settings Panel -->
+  <div class="settings-panel" [class.open]="showSettings">
+    <div class="settings-header">
+      <h3>Reading Settings</h3>
+      <ion-button fill="clear" (click)="toggleSettings()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </div>
+    
+    <div class="settings-content">
+      <!-- Night Mode Toggle -->
+      <div class="setting-item">
+        <ion-label>Night Mode</ion-label>
+        <ion-toggle [(ngModel)]="nightMode" (ionChange)="toggleNightMode()"></ion-toggle>
+      </div>
+      
+      <!-- Brightness Slider -->
+      <div class="setting-item">
+        <ion-label>Brightness</ion-label>
+        <ion-range 
+          [(ngModel)]="brightness" 
+          min="20" 
+          max="100" 
+          step="10"
+          [style.filter]="'brightness(' + brightness + '%)'">
+        </ion-range>
+      </div>
+      
+      <!-- Search -->
+      <div class="setting-item">
+        <ion-label>Search in PDF</ion-label>
+        <div class="search-container">
+          <ion-input 
+            placeholder="Search text..."
+            #searchInput
+            (ionInput)="searchInPdf($event.detail.value || '')">
+          </ion-input>
+          <ion-spinner *ngIf="isSearching" name="crescent" size="small"></ion-spinner>
+        </div>
+      </div>
+      
+      <!-- Search Results -->
+      <div class="setting-item" *ngIf="searchResults.length > 0">
+        <ion-label>Search Results ({{ searchResults.length }})</ion-label>
+        <div class="search-results">
+          <div class="search-result" 
+               *ngFor="let result of searchResults; let i = index"
+               (click)="goToBookmark(result.page)"
+               [class.active]="i === currentSearchIndex">
+            <span class="page-num">Page {{ result.page }}</span>
+            <span class="result-text">{{ result.text }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Quick Page Jump -->
+      <div class="setting-item">
+        <ion-label>Go to Page</ion-label>
+        <ion-input 
+          type="number" 
+          [min]="1" 
+          [max]="totalPages" 
+          placeholder="Page number"
+          #pageInput
+          (ionBlur)="goToPage(+(pageInput.value ?? '') || 1)">
+        </ion-input>
+      </div>
+      
+      <!-- Bookmarks -->
+      <div class="setting-item" *ngIf="bookmarks.length > 0">
+        <ion-label>Bookmarks ({{ bookmarks.length }})</ion-label>
+        <div class="bookmarks-list">
+          <div class="bookmark-item" 
+               *ngFor="let bookmark of bookmarks"
+               (click)="goToBookmark(bookmark)">
+            <ion-icon name="bookmark" color="primary"></ion-icon>
+            <span>Page {{ bookmark }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Reading Progress -->
+      <div class="setting-item">
+        <ion-label>Reading Progress</ion-label>
+        <div class="progress-info">
+          <ion-progress-bar [value]="currentPage / totalPages"></ion-progress-bar>
+          <span>{{ ((currentPage / totalPages) * 100).toFixed(1) }}% complete</span>
+        </div>
+      </div>
+      
+      <!-- Book Info -->
+      <div class="book-info" *ngIf="book">
+        <h4>{{ book.title }}</h4>
+        <p>by {{ book.author }}</p>
+        <p *ngIf="book.pdfFileName">File: {{ book.pdfFileName }}</p>
+        <p>Pages: {{ totalPages }}</p>
+        <p *ngIf="bookmarks.length > 0">Bookmarks: {{ bookmarks.length }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay for settings -->
+  <div class="settings-overlay" [class.open]="showSettings" (click)="toggleSettings()"></div>
+</ion-content>

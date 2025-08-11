@@ -17,13 +17,24 @@ export class TabsPage implements OnInit {
 
   ngOnInit() {
     if (this.platform.is('capacitor')) {
-      debugger
-      this.platform.backButton.subscribeWithPriority(10, () => {
+      // Global hardware back button handler with higher priority
+      this.platform.backButton.subscribeWithPriority(5, () => {
         const currentUrl = this.router.url;
-        if (currentUrl === '/tabs/dashboard') {
+        console.log('Hardware back pressed, current URL:', currentUrl);
+        
+        // Handle specific navigation flows
+        if (currentUrl.includes('/book-detail/')) {
+          // From book details, go back to see-all-books or dashboard
+          this.nav.back();
+        } else if (currentUrl === '/see-all-books') {
+          // From see-all-books, go back to dashboard
+          this.router.navigate(['/tabs/dashboard']);
+        } else if (currentUrl === '/tabs/dashboard') {
+          // From dashboard, exit app
           App.exitApp(); 
         } else {
-          window.history.length > 1 ? this.nav.back() : this.router.navigate(['/tabs/dashboard']);
+          // Default: try to go back, fallback to dashboard
+          this.nav.back();
         }
       });
     }

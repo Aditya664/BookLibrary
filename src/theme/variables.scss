@@ -128,4 +128,19 @@
   --app-transition-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --app-transition-slow: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --app-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  
+  // Universal Safe Area Variables for all device types
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  
+  // Universal status bar height that works on all devices
+  --app-status-bar-height: max(var(--safe-area-inset-top), 20px);
+  
+  // Safe area padding for content
+  --app-safe-padding-top: var(--app-status-bar-height);
+  --app-safe-padding-bottom: max(var(--safe-area-inset-bottom), 0px);
+  --app-safe-padding-left: var(--safe-area-inset-left);
+  --app-safe-padding-right: var(--safe-area-inset-right);
 }

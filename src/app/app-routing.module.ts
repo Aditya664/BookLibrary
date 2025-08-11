@@ -28,10 +28,7 @@ const routes: Routes = [
     path: 'profile',
     loadChildren: () => import('./profile/profile.module').then( m => m.ProfilePageModule)
   },
-  {
-    path: 'book-detail/:id',
-    loadChildren: () => import('./book-details/book-details.module').then(m => m.BookDetailsPageModule)
-  },
+  
   {
     path: 'tabs',
     loadChildren: () => import('./tabs/tabs.module').then( m => m.TabsPageModule)
@@ -41,13 +38,14 @@ const routes: Routes = [
     loadChildren: () => import('./see-all-books/see-all-books.module').then( m => m.SeeAllBooksPageModule)
   },
   {
-    path: 'book-details',
-    loadChildren: () => import('./book-details/book-details.module').then( m => m.BookDetailsPageModule)
+    path: 'read-book/:id',
+    loadChildren: () => import('./read-book/read-book.module').then( m => m.ReadBookPageModule)
   },
   {
-    path: 'see-all-books',
-    loadChildren: () => import('./see-all-books/see-all-books.module').then( m => m.SeeAllBooksPageModule)
+    path: 'book-detail/:id',
+    loadChildren: () => import('./book-details/book-details.module').then( m => m.BookDetailsPageModule)
   },
+
 ];
 
 @NgModule({

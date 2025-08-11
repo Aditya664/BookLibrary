@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { BookService } from '../services/book.service';
+import { TokenService } from '../services/token.service';
+import { ReadingProgressResponseDto } from '../Model/ApiResponse';
 import {
   ApiResponse,
   BookResponse,
   GenreResponseWithBooks,
 } from '../Model/ApiResponse';
-import { forkJoin } from 'rxjs';
-import { NavController, Platform } from '@ionic/angular';
-import { App } from '@capacitor/app';
+import { catchError, forkJoin, of } from 'rxjs';
+import { LoadingController, NavController, ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-dashboard',
@@ -20,38 +20,19 @@ export class DashboardPage implements OnInit {
   loggedInUserName = localStorage.getItem('fullName');
   genres: GenreResponseWithBooks[] = [];
   popularBooks: BookResponse[] = [];
+  allBooks: BookResponse[] = [];
+  continueReading: ReadingProgressResponseDto  | null = null;
   isLoading = false;
   recentBooks: BookResponse[] = [];
-  continueReading!: BookResponse;
-  featuredBooks: BookResponse[] = [
-    {
-      id: 1,
-      image: 'assets/book.png',
-      title: 'Atomic Habits',
-      author: 'James Clear',
-      rating: 4.8,
-      description:
-        'A practical guide to building good habits and breaking bad ones using proven frameworks.',
-      genres: [],
-      reviews: [],
-      createdAt: '2023-08-07T12:00:00.000Z',
-    },
-    {
-      id: 2,
-      image: 'assets/book.png',
-      title: 'Ikigai',
-      author: 'Héctor García',
-      rating: 4.5,
-      description:
-        'Explores the Japanese concept of purpose and how it can lead to a long, fulfilling life.',
-      genres: [],
-      reviews: [],
-      createdAt: '2023-08-07T12:00:00.000Z',
-    },
-  ];
+  userId: string | null = null;
+
+
+  constructor(
+    private bookService: BookService,
+    private nav: NavController,
+  ) {}
 
   searchQuery = '';
-  allBooks: BookResponse[] = [];
   filteredBooks: BookResponse[] = [];
   showSearchResults = false;
   notificationCount = 3;
@@ -62,22 +43,22 @@ export class DashboardPage implements OnInit {
       title: 'New Book Added',
       message: 'Atomic Habits is now available in your library',
       time: '2 hours ago',
-      read: false
+      read: false,
     },
     {
       id: 2,
       title: 'Reading Goal',
       message: 'You\'re 2 books away from your monthly goal!',
       time: '1 day ago',
-      read: false
+      read: false,
     },
     {
       id: 3,
       title: 'Book Recommendation',
       message: 'Based on your reading history, you might like "Deep Work"',
       time: '3 days ago',
-      read: true
-    }
+      read: true,
+    },
   ];
 
   onSearch(event: any) {
@@ -105,8 +86,7 @@ export class DashboardPage implements OnInit {
   }
 
   openSearch() {
-    // Navigate to dedicated search page or expand search functionality
-    this.router.navigate(['/search']);
+    this.nav.navigateRoot(['/search']);
   }
 
   toggleNotifications() {
@@ -114,7 +94,7 @@ export class DashboardPage implements OnInit {
   }
 
   markNotificationAsRead(notificationId: number) {
-    const notification = this.notifications.find(n => n.id === notificationId);
+    const notification = this.notifications.find((n) => n.id === notificationId);
     if (notification) {
       notification.read = true;
       this.updateNotificationCount();
@@ -122,22 +102,22 @@ export class DashboardPage implements OnInit {
   }
 
   updateNotificationCount() {
-    this.notificationCount = this.notifications.filter(n => !n.read).length;
+    this.notificationCount = this.notifications.filter((n) => !n.read).length;
   }
 
   showFilters = false;
   selectedGenres: string[] = [];
-  availableGenres:string[] = []
-  sortBy = 'title'; 
-  
+  availableGenres: string[] = [];
+  sortBy = 'title';
+
   openFilters() {
     this.showFilters = true;
   }
-  
+
   closeFilters() {
     this.showFilters = false;
   }
-  
+
   toggleGenreFilter(genre: string) {
     const index = this.selectedGenres.indexOf(genre);
     if (index > -1) {
@@ -147,32 +127,30 @@ export class DashboardPage implements OnInit {
     }
     this.applyFilters();
   }
-  
+
   setSortBy(sortOption: string) {
     this.sortBy = sortOption;
     this.applyFilters();
   }
-  
+
   applyFilters() {
     let filtered = [...this.allBooks];
-    
+
     // Apply search query
     if (this.searchQuery.trim()) {
-      filtered = filtered.filter(book =>
+      filtered = filtered.filter((book) =>
         book.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         book.author.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     }
-    
+
     // Apply genre filters
     if (this.selectedGenres.length > 0) {
-      filtered = filtered.filter(book =>
-        book.genres && book.genres.some(genre => 
-          this.selectedGenres.includes(genre.name)
-        )
+      filtered = filtered.filter((book) =>
+        book.genres && book.genres.some((genre) => this.selectedGenres.includes(genre.name))
       );
     }
-    
+
     // Apply sorting
     switch (this.sortBy) {
       case 'title':
@@ -188,10 +166,10 @@ export class DashboardPage implements OnInit {
         filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         break;
     }
-    
+
     this.filteredBooks = filtered;
   }
-  
+
   clearFilters() {
     this.selectedGenres = [];
     this.sortBy = 'title';
@@ -219,127 +197,71 @@ export class DashboardPage implements OnInit {
       'gradient-pink',
     ];
 
-    const hash = Array.from(title).reduce(
-      (acc, char) => acc + char.charCodeAt(0),
-      0
-    );
+    const hash = Array.from(title).reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return gradients[hash % gradients.length];
   }
 
   fetchData(): void {
     this.isLoading = true;
-
+  
     forkJoin({
-      popularBooks: this.bookService.getPopularBooks(),
-      genres: this.bookService.getAllGenres(),
-      recentBooks: this.bookService.getRecentlyAddedBooks(),
-      allBooks: this.bookService.getAllBooks(),
+      popularBooks: this.bookService.getPopularBooks()
+        .pipe(catchError(() => of({ data: [] }))),
+      genres: this.bookService.getAllGenres()
+        .pipe(catchError(() => of({ data: [] }))),
+      recentBooks: this.bookService.getRecentlyAddedBooks()
+        .pipe(catchError(() => of({ data: [] }))),
+      allBooks: this.bookService.getAllBooks()
+        .pipe(catchError(() => of({ data: [] }))),
+      continueReading: this.bookService.getLastReadBook(TokenService.getUserId() ?? "")
+        .pipe(catchError(() => of({ data: null })))
     }).subscribe({
-      next: ({ popularBooks, genres, recentBooks, allBooks }) => {
+      next: ({ popularBooks, genres, recentBooks, allBooks, continueReading }) => {
         this.popularBooks = popularBooks.data.slice(0, 10);
         this.genres = genres.data;
-        this.availableGenres = [...this.genres].map((genre) => genre.name);  
+        this.availableGenres = [...this.genres].map((genre) => genre.name);
         this.recentBooks = recentBooks.data;
-        this.isLoading = false;
-        this.continueReading = this.popularBooks[0];
         this.allBooks = allBooks.data;
+        this.continueReading = continueReading.data;
+        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading data', error);
         this.isLoading = false;
-      },
+      }
     });
   }
 
   ngOnInit(): void {
+    this.userId = TokenService.getUserId();
     this.fetchData();
   }
 
-  constructor(
-    private router: Router,
-    private bookService: BookService,
-    private platform: Platform,
-    private nav: NavController
-  ) {}
+  loadContinueReading() {
+    if (!this.userId) {
+      console.warn('No user ID found for continue reading');
+      return;
+    }
+  }
 
-  get firstName(): string {
-    return this.loggedInUserName
-      ? this.loggedInUserName.trim().split(' ')[0]
-      : 'Reader';
+  navigateToBook(bookId: string) {
+    this.nav.navigateRoot(['/book-detail', bookId]);
+  }
+
+  navigateToReadBook(bookId: string | number) {
+    const id = typeof bookId === 'number' ? bookId.toString() : bookId;
+    this.nav.navigateForward(['/read-book', id]);
   }
 
 
 
-  languages = ['English', 'Hindi', 'Marathi', 'Tamil', 'Gujarati'];
-
-  books = [
-    {
-      id: '1',
-      image: 'assets/book.png',
-      title: 'Atomic Habits',
-      author: 'James Clear',
-      rating: 4.8,
-      description:
-        'A practical guide to building good habits and breaking bad ones using proven frameworks.',
-    },
-    {
-      id: '2',
-      image: 'assets/book.png',
-      title: 'Ikigai',
-      author: 'Héctor García',
-      rating: 4.5,
-      description:
-        'Explores the Japanese concept of purpose and how it can lead to a long, fulfilling life.',
-    },
-    {
-      id: '3',
-      image: 'assets/book.png',
-      title: 'The Alchemist',
-      author: 'Paulo Coelho',
-      rating: 4.7,
-      description:
-        'A mystical story about following your dreams and listening to your heart.',
-    },
-    {
-      id: '4',
-      image: 'assets/book.png',
-      title: 'Deep Work',
-      author: 'Cal Newport',
-      rating: 4.6,
-      description:
-        'Teaches how to focus without distraction to produce high-quality work.',
-    },
-    {
-      id: '5',
-      image: 'assets/book.png',
-      title: 'Think Again',
-      author: 'Adam Grant',
-      rating: 4.4,
-      description:
-        'Challenges us to question our assumptions and think more flexibly.',
-    },
-    {
-      id: '6',
-      image: 'assets/book.png',
-      title: 'Rich Dad Poor Dad',
-      author: 'R. Kiyosaki',
-      rating: 4.6,
-      description:
-        'A personal finance classic comparing two contrasting financial mindsets.',
-    },
-    {
-      id: '7',
-      image: 'assets/book.png',
-      title: '1984',
-      author: 'George Orwell',
-      rating: 4.9,
-      description:
-        'A dystopian novel warning about the dangers of totalitarianism and surveillance.',
-    },
-  ];
+  seeAllBooks() {
+    this.nav.navigateForward(['/see-all-books']);
+  }
 
   openBook(book: any) {
-    this.nav.navigateRoot(['/book-detail', book.id]);
+    const id = (book?.id ?? '').toString();
+    this.nav.navigateForward(['/book-detail', id]);
   }
 
   handleRefresh(event: any) {

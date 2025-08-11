@@ -53,9 +53,12 @@ export class BookDetailsPage implements OnInit {
   }
 
   readBook() {
-    // Navigate to reading interface or open book reader
-    console.log('Reading book:', this.book?.title);
-    // You can implement actual reading functionality here
+    // Navigate to PDF reader page
+    if (this.book && this.book.id) {
+      this.navCtrl.navigateForward(['/read-book', this.book.id]);
+    } else {
+      console.log('No book available to read');
+    }
   }
 
   openBook(book: any) {
@@ -66,18 +69,6 @@ export class BookDetailsPage implements OnInit {
   ngOnInit() {
     this.getBookDetailsById();
     this.loadSimilarBooks();
-    if (this.platform.is('capacitor')) {
-      this.platform.backButton.subscribeWithPriority(10, () => {
-        const canGoBack = window.history.length > 1;
-        console.log(window.history);
-        
-        if (canGoBack) {
-          this.goBack();
-        } else {
-          App.exitApp();
-        }
-      });
-    }
   }
 
   getBookDetailsById() {
@@ -90,6 +81,8 @@ export class BookDetailsPage implements OnInit {
       }, ()=>{this.isLoading = false;});
     });
   }
+
+
 
   getInitials(title: string): string {
     if (!title) return '';
@@ -112,16 +105,17 @@ export class BookDetailsPage implements OnInit {
       'gradient-pink'
     ];
   
-    // Simple hash to get a consistent gradient for each title
     const hash = Array.from(title).reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return gradients[hash % gradients.length];
   }
 
   startReading() {
-    // Navigate to reading page or open book reader
-    console.log('Starting to read:', this.book.title);
-    // You could navigate to a reading page here
-    // this.navCtrl.navigateForward(`/reading/${this.book.id}`);
+    // Navigate to PDF reader page
+    if (this.book && this.book.id) {
+      this.navCtrl.navigateForward(['/read-book', this.book.id]);
+    } else {
+      console.log('No book available to read');
+    }
   }
 
   toggleBookmark() {

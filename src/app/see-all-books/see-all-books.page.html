@@ -5,7 +5,7 @@
 </ng-container>
 
 <ng-template #mainContent>
-  <ion-content fullscreen="false" class="modern-see-all-books ion-padding">
+  <ion-content [fullscreen]="true" class="modern-see-all-books ion-padding">
     <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
       <ion-refresher-content
         pullingIcon="sparkles-outline"
@@ -14,6 +14,9 @@
         refreshingText="Refreshing content..."
       ></ion-refresher-content>
     </ion-refresher>
+    
+    <!-- Status Bar -->
+    <div class="status-bar"></div>
     
     <!-- Modern Header -->
     <div class="modern-header">

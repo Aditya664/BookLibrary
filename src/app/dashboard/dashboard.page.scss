@@ -3,12 +3,15 @@
 }
 
 .modern-dashboard {
-  --background: var(--ion-background-gradient);
+  --ion-background-color: var(--app-background);
   font-family: var(--ion-font-family);
   
   .status-bar {
-    height: var(--ion-safe-area-top, 0px);
-    background: transparent;
+    height: var(--app-status-bar-height);
+    background: var(--app-card-background);
+    width: 100%;
+    position: relative;
+    z-index: 1000;
   }
   
   .modern-header {
@@ -538,6 +541,7 @@
           line-height: var(--ion-line-height-tight);
           display: -webkit-box;
           -webkit-line-clamp: 2;
+          line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
         }
