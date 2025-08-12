@@ -31,21 +31,662 @@
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
 
-// Modern Global Styles
-ion-content {
-  --background: var(--ion-background-gradient);
+// Modern Tab Bar Styles (matching reference image)
+ion-tab-bar {
+  --background: #ffffff;
+  --border: 1px solid #f0f0f0;
+  --color: #9ca3af;
+  --color-selected: #000000;
+  height: 64px;
+  padding: 8px 0;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+  
+  ion-tab-button {
+    --color: #9ca3af;
+    --color-selected: #000000;
+    --ripple-color: transparent;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    
+    ion-icon {
+      font-size: 24px;
+      margin-bottom: 2px;
+      transition: all 0.2s ease;
+    }
+    
+    ion-label {
+      font-size: 11px;
+      font-weight: 500;
+      margin-top: 2px;
+      text-transform: none;
+    }
+    
+    &.tab-selected {
+      ion-icon {
+        transform: scale(1.1);
+      }
+      
+      ion-label {
+        font-weight: 600;
+      }
+    }
+    
+    &:hover {
+      --color: #6b7280;
+      
+      ion-icon {
+        transform: scale(1.05);
+      }
+    }
+  }
 }
-/* Modern Global Enhancements */
-html,
-body {
-  background: var(--ion-background-gradient);
+
+// Modern Global Styles and Variables
+:root {
+  // Primary Colors (Uber Black & White)
+  --ion-color-primary: #000000;
+  --ion-color-primary-rgb: 0, 0, 0;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #1a1a1a;
+  --ion-color-primary-tint: #333333;
+
+  // Secondary Colors (Uber Green)
+  --ion-color-secondary: #00d4aa;
+  --ion-color-secondary-rgb: 0, 212, 170;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #00b896;
+  --ion-color-secondary-tint: #1ad8b3;
+
+  // Tertiary Colors (Uber Blue)
+  --ion-color-tertiary: #1fbad3;
+  --ion-color-tertiary-rgb: 31, 186, 211;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade: #1ba4ba;
+  --ion-color-tertiary-tint: #35c1d7;
+
+  // Modern Background Colors
+  --ion-background-color: #ffffff;
+  --ion-background-color-rgb: 255, 255, 255;
+  --ion-background-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+  --ion-surface-color: rgba(255, 255, 255, 0.98);
+  --ion-card-background: rgba(255, 255, 255, 0.95);
+  --ion-glass-background: rgba(255, 255, 255, 0.85);
+
+  // Modern Text Colors
+  --ion-text-color: #1e293b;
+  --ion-text-color-rgb: 30, 41, 59;
+  --ion-text-color-secondary: #64748b;
+  --ion-text-color-tertiary: #94a3b8;
+
+  // Uber-Inspired Typography (Bold & Clean)
+  --ion-font-family: 'UberMove', 'Helvetica Neue', Arial, sans-serif;
+  --ion-font-weight-light: 300;
+  --ion-font-weight-normal: 400;
+  --ion-font-weight-medium: 500;
+  --ion-font-weight-semibold: 600;
+  --ion-font-weight-bold: 700;
+  --ion-font-weight-black: 900;
+
+  // Uber-Style Spacing System (Strategic White Space)
+  --uber-spacing-xs: 4px;
+  --uber-spacing-sm: 8px;
+  --uber-spacing-md: 16px;
+  --uber-spacing-lg: 24px;
+  --uber-spacing-xl: 32px;
+  --uber-spacing-2xl: 48px;
+  --uber-spacing-3xl: 64px;
+  --uber-spacing-4xl: 80px;
+
+  // Status Bar & Safe Area (Fixed for proper positioning)
+  --ion-safe-area-top: env(safe-area-inset-top);
+  --ion-safe-area-bottom: env(safe-area-inset-bottom);
+  --ion-safe-area-left: env(safe-area-inset-left);
+  --ion-safe-area-right: env(safe-area-inset-right);
+  --actual-status-bar-height: 24px; // Will be set dynamically by app component
+  --header-height: 56px;
+  --total-header-height: calc(var(--actual-status-bar-height) + var(--header-height));
+  
+  // App Colors
+  --ion-background-color: #f8f9ff;
+  --ion-background-color-rgb: 248, 249, 255;
+  --ion-text-color: #1e293b;
+  --ion-text-color-rgb: 30, 41, 59;
+  --ion-border-color: rgba(203, 213, 225, 0.3);
+  
+  // Gradients
+  --ion-background-gradient: linear-gradient(135deg, #f5f7fa 0%, #e9edf2 100%);
+  --header-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  
+  // Shadows
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  // Border Radius
+  --border-radius-sm: 8px;
+  --border-radius: 12px;
+  --border-radius-lg: 16px;
+  --border-radius-xl: 24px;
+  --border-radius-full: 9999px;
+  
+  // Spacing
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 20px;
+  --spacing-xl: 24px;
+  --spacing-2xl: 32px;
+  
+  // Transitions
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  // Modern Spacing System
+  --app-spacing-xs: 4px;
+  --app-spacing-sm: 8px;
+  --app-spacing-md: 16px;
+  --app-spacing-lg: 24px;
+  --app-spacing-xl: 32px;
+  --app-spacing-2xl: 48px;
+  --app-spacing-3xl: 64px;
+
+  // Modern Border Radius
+  --app-border-radius-sm: 8px;
+  --app-border-radius-md: 12px;
+  --app-border-radius-lg: 16px;
+  --app-border-radius-xl: 20px;
+  --app-border-radius-2xl: 24px;
+  --app-border-radius-full: 9999px;
+
+  // Modern Shadows
+  --app-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --app-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --app-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --app-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  // Modern Card Styles
+  --app-card-background: rgba(255, 255, 255, 0.95);
+  --app-card-border: 1px solid rgba(255, 255, 255, 0.3);
+  --app-card-shadow: var(--app-shadow-lg);
+  --app-card-backdrop-filter: blur(20px);
+
+  // Modern Button Styles
+  --app-button-border-radius: var(--app-border-radius-lg);
+  --app-button-padding: 12px 24px;
+  --app-button-font-weight: var(--ion-font-weight-semibold);
+  --app-button-transition: all 0.2s ease-in-out;
+
+  // Modern Input Styles
+  --app-input-background: rgba(255, 255, 255, 0.9);
+  --app-input-border: 1px solid rgba(203, 213, 225, 0.4);
+  --app-input-border-radius: var(--app-border-radius-lg);
+  --app-input-padding: 12px 16px;
+  --app-input-backdrop-filter: blur(12px);
+}
+
+// Base Styles
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
   font-family: var(--ion-font-family);
+  background: var(--ion-background-color);
+  color: var(--ion-text-color);
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+// Status Bar (No longer needed since overlay is disabled)
+.status-bar {
+  display: none; // Status bar no longer overlays content
+}
+
+// Global Content Styles
 ion-content {
-  --padding-top: calc(var(--app-spacing-2xl) + var(--ion-safe-area-top, 0px));
+  --background: var(--ion-background-gradient);
+  --padding-top: var(--total-header-height); // Status bar + header height
+  --padding-bottom: var(--ion-safe-area-bottom, 0px);
+  --padding-start: var(--ion-safe-area-left, 0px);
+  --padding-end: var(--ion-safe-area-right, 0px);
+  --color: var(--ion-text-color);
+  font-family: var(--ion-font-family);
+}
+
+// Modern Component Styles
+ion-button {
+  --background: #000000;
+  --background-hover: #1a1a1a;
+  --background-activated: #333333;
+  --color: white;
+  --border-radius: 8px;
+  --box-shadow: none;
+  --padding-top: 16px;
+  --padding-bottom: 16px;
+  --padding-start: var(--uber-spacing-lg);
+  --padding-end: var(--uber-spacing-lg);
+  font-weight: var(--ion-font-weight-bold);
+  font-size: 16px;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  transition: all 0.15s ease;
+  height: 56px;
+  
+  &:hover {
+    --background: #1a1a1a;
+  }
+  
+  &.button-outline {
+    --background: transparent;
+    --color: #000000;
+    --border-color: #000000;
+    --border-width: 2px;
+    
+    &:hover {
+      --background: #000000;
+      --color: white;
+    }
+  }
+  
+  &.button-secondary {
+    --background: #00d4aa;
+    --background-hover: #00b896;
+    --color: white;
+  }
+  
+  &.button-fill-solid {
+    --background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
+    --background-hover: linear-gradient(135deg, var(--ion-color-primary-shade) 0%, var(--ion-color-primary-tint) 100%);
+    --background-activated: var(--ion-color-primary-shade);
+    --color: var(--ion-color-primary-contrast);
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1);
+    
+    &:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 8px 32px rgba(99, 102, 241, 0.4), 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+  }
+  
+  &.button-fill-outline {
+    --border-color: var(--ion-color-primary);
+    --color: var(--ion-color-primary);
+    --background: rgba(255, 255, 255, 0.8);
+    --background-hover: rgba(99, 102, 241, 0.1);
+    --background-activated: rgba(99, 102, 241, 0.15);
+    backdrop-filter: blur(12px);
+    border: 2px solid var(--ion-color-primary);
+    
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2);
+    }
+  }
+  
+  &.button-fill-clear {
+    --color: var(--ion-color-primary);
+    --background-hover: rgba(99, 102, 241, 0.08);
+    --background-activated: rgba(99, 102, 241, 0.12);
+    
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+}
+
+ion-card {
+  --background: var(--ion-glass-background);
+  --color: var(--ion-text-color);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--app-border-radius-2xl);
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(24px) saturate(180%);
+  margin: var(--app-spacing-md);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  }
+  
+  &:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 16px 48px rgba(99, 102, 241, 0.2), 0 8px 16px rgba(0, 0, 0, 0.08);
+    border-color: rgba(99, 102, 241, 0.3);
+  }
+}
+
+ion-searchbar {
+  --background: var(--ion-glass-background);
+  --border-radius: var(--app-border-radius-2xl);
+  --box-shadow: 0 8px 32px rgba(99, 102, 241, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --color: var(--ion-text-color);
+  --placeholder-color: var(--ion-text-color-secondary);
+  --icon-color: var(--ion-color-primary);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+  }
+  
+  &:hover, &:focus-within {
+    --box-shadow: 0 12px 40px rgba(99, 102, 241, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: rgba(99, 102, 241, 0.4);
+    transform: translateY(-1px);
+  }
+  
+  .searchbar-input {
+    padding: 16px 20px !important;
+    font-weight: var(--ion-font-weight-medium);
+    font-size: 16px;
+  }
+  
+  .searchbar-search-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+ion-item {
+  --background: transparent;
+  --border-color: rgba(203, 213, 225, 0.2);
+  --color: var(--ion-text-color);
+  --padding-start: var(--app-spacing-lg);
+  --padding-end: var(--app-spacing-lg);
+  --min-height: 56px;
+  
+  ion-label {
+    font-weight: var(--ion-font-weight-medium);
+  }
+}
+
+ion-list {
+  background: transparent;
+  
+  ion-item {
+    --border-radius: var(--app-border-radius-lg);
+    margin-bottom: var(--app-spacing-sm);
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// Global Header Styles
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--actual-status-bar-height) + var(--header-height));
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 var(--uber-spacing-lg) var(--uber-spacing-sm);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  
+  .header-title {
+    font-size: 20px;
+    font-weight: var(--ion-font-weight-bold);
+    color: #000000;
+    letter-spacing: -0.02em;
+  }
+  
+  .header-subtitle {
+    font-size: 14px;
+    font-weight: var(--ion-font-weight-normal);
+    color: #6b7280;
+    margin-top: 2px;
+  }
+  
+  .header-content {
+    width: 100%;
+    height: var(--header-height, 56px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--spacing);
+    margin: 0 auto;
+    max-width: 1200px;
+  }
+  
+  .header-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    color: white;
+    letter-spacing: -0.01em;
+  }
+  
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    ion-button, button {
+      --padding-start: 8px;
+      --padding-end: 8px;
+      --color: white;
+      --background: rgba(255, 255, 255, 0.1);
+      --background-hover: rgba(255, 255, 255, 0.15);
+      --background-activated: rgba(255, 255, 255, 0.2);
+      --border-radius: 12px;
+      --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin: 0;
+      height: 36px;
+      width: 36px;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+      
+      &::part(native) {
+        border-radius: var(--border-radius);
+      }
+      
+      &:active {
+        transform: scale(0.95);
+      }
+      
+      ion-icon {
+        font-size: 1.25rem;
+      }
+    }
+  }
+  
+  // Notification badge styling
+  .notification-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: var(--ion-color-danger);
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--ion-color-primary);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    gap: var(--spacing-sm);
+  }
+}
+
+// Global Button Styles
+ion-button {
+  --border-radius: var(--border-radius);
+  --padding-start: var(--spacing);
+  --padding-end: var(--spacing);
+  --padding-top: var(--spacing-sm);
+  --padding-bottom: var(--spacing-sm);
+  --box-shadow: none;
+  text-transform: none;
+  font-weight: 500;
+  letter-spacing: normal;
+  
+  &[shape='round'] {
+    --border-radius: 50%;
+    --padding-start: 0;
+    --padding-end: 0;
+    --padding-top: 0;
+    --padding-bottom: 0;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+// Global Card Styles
+.app-card {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: var(--border-radius);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--ion-border-color);
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  overflow: hidden;
+  
+  &:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+}
+
+// Responsive Adjustments
+@media (max-width: 768px) {
+  :root {
+    --header-height: 52px;
+    --border-radius: 10px;
+    --border-radius-lg: 14px;
+    --border-radius-xl: 20px;
+  }
+  
+  .app-header {
+    padding: 0 var(--spacing-sm);
+    
+    .header-content {
+      padding: 0 var(--spacing-sm);
+    }
+  }
+}
+
+// Dark Mode Support
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ion-background-color: #0f172a;
+    --ion-background-color-rgb: 15, 23, 42;
+    --ion-text-color: #f8fafc;
+    --ion-text-color-rgb: 248, 250, 252;
+    --ion-border-color: rgba(71, 85, 105, 0.3);
+    --ion-background-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  }
+  
+  .app-card {
+    background: rgba(30, 41, 59, 0.6);
+    border-color: rgba(71, 85, 105, 0.3);
+  }
+  
+  .app-header {
+    background: rgba(15, 23, 42, 0.8);
+    border-bottom-color: rgba(71, 85, 105, 0.3);
+  }
+}
+
+// Ionic App Wrapper
+ion-app {
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  
+  // Safe area variables for Ionic components
+  --ion-safe-area-top: var(--safe-area-top);
+  --ion-safe-area-bottom: var(--safe-area-bottom);
+  --ion-safe-area-left: var(--safe-area-left);
+  --ion-safe-area-right: var(--safe-area-right);
+}
+
+ion-content {
+  --padding-top: calc(var(--header-height) + var(--safe-area-top));
+  --padding-bottom: var(--safe-area-bottom);
+  --padding-start: var(--safe-area-left);
+  --padding-end: var(--safe-area-right);
+  --background: var(--ion-background-gradient);
+  --color: var(--ion-text-color);
+  font-family: var(--ion-font-family);
+}
+
+// Status bar container
+.status-bar {
+  height: var(--safe-area-top);
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: transparent;
+  pointer-events: none;
+}
+
+// Header container for consistent header styling
+.app-header {
+  position: fixed;
+  top: var(--safe-area-top);
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(203, 213, 225, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Ensure content doesn't go under the header
+ion-content {
+  &::part(scroll) {
+    padding-top: calc(var(--header-height) + var(--safe-area-top));
+  }
 }
 
 // Modern Button Enhancements
@@ -133,6 +774,57 @@ ion-tab-bar {
   }
 }
 
+// Uber-style Sticky Header (Global)
+.uber-sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--uber-bg, #ffffff);
+  border-bottom: 1px solid var(--uber-border, #e5e7eb);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: var(--uber-spacing-lg, 20px) var(--uber-spacing-lg, 20px) var(--uber-spacing-md, 16px);
+  
+  .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    
+    .header-title {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--uber-text, #000000);
+      letter-spacing: -0.02em;
+    }
+    
+    .header-logo {
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--uber-text, #000000);
+      letter-spacing: -0.02em;
+    }
+    
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--uber-spacing-md, 16px);
+      
+      ion-button {
+        --background: transparent;
+        --color: var(--uber-text, #000000);
+        --border-radius: 8px;
+        --padding-start: 12px;
+        --padding-end: 12px;
+        height: 40px;
+        
+        &:hover {
+          --background: var(--uber-hover-bg, #f3f4f6);
+        }
+      }
+    }
+  }
+}
+
 // Utility Classes
 .glass-effect {
   background: var(--app-glass-gradient);
@@ -143,6 +835,14 @@ ion-tab-bar {
 .modern-shadow {
   box-shadow: var(--app-card-shadow);
 }
+
+.gradient-1 { background: linear-gradient(135deg, var(--uber-blue) 0%, var(--uber-purple) 100%) !important; }
+.gradient-2 { background: linear-gradient(135deg, var(--uber-green) 0%, var(--uber-cyan) 100%) !important; }
+.gradient-3 { background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%) !important; }
+.gradient-4 { background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%) !important; }
+.gradient-5 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important; }
+.gradient-6 { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%) !important; }
+
 
 .hover-lift {
   transition: var(--app-transition-base);

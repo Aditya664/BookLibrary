@@ -1,39 +1,41 @@
-<ion-content [fullscreen]="true" class="pdf-reader" [class.night-mode]="nightMode" [class.fullscreen]="isFullscreen">
-  <!-- Status Bar -->
-  <div class="status-bar"></div>
-
-  <!-- Header Controls -->
-  <div class="reader-header" [class.hidden]="!showControls || isFullscreen">
-    <ion-toolbar>
+<ion-content [fullscreen]="true" class="pdf-reader modern-ui" [class.night-mode]="nightMode" [class.fullscreen]="isFullscreen">
+  <!-- Status Bar (handled by global styles) -->
+  
+  <!-- Modern Header -->
+  <div class="modern-header" [class.hidden]="!showControls || isFullscreen" [class.scrolled]="headerScrolled">
+    <ion-toolbar class="header-toolbar">
       <ion-buttons slot="start">
-        <ion-button fill="clear" (click)="goBack()">
-          <ion-icon name="arrow-back-outline"></ion-icon>
+        <ion-button (click)="goBack()" fill="clear" class="back-button">
+          <ion-icon slot="icon-only" name="arrow-back-outline" class="header-icon"></ion-icon>
         </ion-button>
       </ion-buttons>
       
-      <ion-title>{{ book ? book.title : 'Reading...' }}</ion-title>
+      <ion-title class="page-title" *ngIf="headerScrolled">
+        {{ book ? truncateText(book.title, 20) : 'Reading...' }}
+      </ion-title>
       
-      <ion-buttons slot="end">
-        <ion-button fill="clear" (click)="toggleBookmark()">
-          <ion-icon [name]="isBookmarked() ? 'bookmark' : 'bookmark-outline'" 
-                    [color]="isBookmarked() ? 'primary' : undefined"></ion-icon>
+      <ion-buttons slot="end" class="header-actions">
+        <ion-button (click)="toggleBookmark()" fill="clear" class="action-btn" [class.active]="isBookmarked()">
+          <ion-icon slot="icon-only" [name]="isBookmarked() ? 'bookmark' : 'bookmark-outline'" class="header-icon"></ion-icon>
         </ion-button>
-        <ion-button fill="clear" (click)="toggleSettings()">
-          <ion-icon name="settings-outline"></ion-icon>
+        <ion-button (click)="toggleSettings()" fill="clear" class="action-btn">
+          <ion-icon slot="icon-only" name="options-outline" class="header-icon"></ion-icon>
         </ion-button>
-        <ion-button fill="clear" (click)="toggleFullscreen()">
-          <ion-icon [name]="isFullscreen ? 'contract-outline' : 'expand-outline'"></ion-icon>
+        <ion-button (click)="toggleFullscreen()" fill="clear" class="action-btn">
+          <ion-icon slot="icon-only" [name]="isFullscreen ? 'contract-outline' : 'expand-outline'" class="header-icon"></ion-icon>
         </ion-button>
       </ion-buttons>
     </ion-toolbar>
   </div>
 
   <!-- PDF Container -->
-  <div class="pdf-container" #pdfContainer [style.background-color]="backgroundColor">
+  <div class="pdf-container modern-container" #pdfContainer [style.background-color]="backgroundColor">
     <!-- Loading Spinner -->
     <div class="loading-container" *ngIf="isLoading">
-      <ion-spinner name="crescent"></ion-spinner>
-      <p>Loading PDF...</p>
+      <div class="loading-content">
+        <ion-spinner name="crescent" class="loading-spinner"></ion-spinner>
+        <p class="loading-text">Loading book...</p>
+      </div>
     </div>
 
     <!-- PDF Canvas -->
@@ -56,45 +58,56 @@
     </div>
   </div>
 
-  <!-- Bottom Controls -->
+  <!-- Bottom Toolbar -->
   <div class="reader-controls" [class.hidden]="!showControls || isFullscreen">
-    <!-- Page Navigation -->
-    <div class="page-controls">
-      <ion-button 
-        fill="clear" 
-        size="small" 
-        (click)="previousPage()" 
-        [disabled]="currentPage <= 1">
-        <ion-icon name="chevron-back-outline"></ion-icon>
+    <!-- Left Controls -->
+    <div class="control-group">
+      <!-- Bookmark Button -->
+      <ion-button (click)="toggleBookmark()" [class.active]="isBookmarked()">
+        <ion-icon [name]="isBookmarked() ? 'bookmark' : 'bookmark-outline'"></ion-icon>
       </ion-button>
       
-      <div class="page-info">
-        <span>{{ currentPage }} / {{ totalPages }}</span>
+      <!-- Page Navigation -->
+      <div class="page-controls">
+        <div class="page-nav">
+          <ion-button (click)="previousPage()" [disabled]="currentPage <= 1">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+          </ion-button>
+          
+          <div class="page-info">
+            <span>{{ currentPage }} / {{ totalPages }}</span>
+          </div>
+          
+          <ion-button (click)="nextPage()" [disabled]="currentPage >= totalPages">
+            <ion-icon name="chevron-forward-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Center Controls (Empty for now, can be used for chapter navigation) -->
+    <div class="control-group">
+      <!-- Can add chapter navigation here -->
+    </div>
+    
+    <!-- Right Controls -->
+    <div class="control-group">
+      <!-- Zoom Controls -->
+      <div class="zoom-controls">
+        <ion-button (click)="zoomOut()">
+          <ion-icon name="remove-outline"></ion-icon>
+        </ion-button>
+        
+        <span class="zoom-level">{{ (scale * 100).toFixed(0) }}%</span>
+        
+        <ion-button (click)="zoomIn()">
+          <ion-icon name="add-outline"></ion-icon>
+        </ion-button>
       </div>
       
-      <ion-button 
-        fill="clear" 
-        size="small" 
-        (click)="nextPage()" 
-        [disabled]="currentPage >= totalPages">
-        <ion-icon name="chevron-forward-outline"></ion-icon>
-      </ion-button>
-    </div>
-
-    <!-- Zoom Controls -->
-    <div class="zoom-controls">
-      <ion-button fill="clear" size="small" (click)="zoomOut()">
-        <ion-icon name="remove-outline"></ion-icon>
-      </ion-button>
-      
-      <span class="zoom-level">{{ (scale * 100).toFixed(0) }}%</span>
-      
-      <ion-button fill="clear" size="small" (click)="zoomIn()">
-        <ion-icon name="add-outline"></ion-icon>
-      </ion-button>
-      
-      <ion-button fill="clear" size="small" (click)="resetZoom()">
-        <ion-icon name="refresh-outline"></ion-icon>
+      <!-- Settings Button -->
+      <ion-button (click)="toggleSettings()">
+        <ion-icon name="options-outline"></ion-icon>
       </ion-button>
       
       <ion-button fill="clear" size="small" (click)="fitToWidth()">
@@ -136,11 +149,12 @@
   </div>
 
   <!-- Settings Panel -->
+  <!-- Settings Panel -->
   <div class="settings-panel" [class.open]="showSettings">
     <div class="settings-header">
       <h3>Reading Settings</h3>
-      <ion-button fill="clear" (click)="toggleSettings()">
-        <ion-icon name="close-outline"></ion-icon>
+      <ion-button fill="clear" (click)="toggleSettings()" class="close-button">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
       </ion-button>
     </div>
     

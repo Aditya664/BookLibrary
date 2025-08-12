@@ -1,26 +1,49 @@
 .registration-page {
-  --background: #f9f9f9;
+  --background: var(--ion-background-gradient);
+  font-family: var(--ion-font-family);
   
+  ion-content {
+    --background: var(--ion-background-gradient);
+    --padding-top: 0; // Registration page doesn't need header padding
+  }
+
+  // Status bar no longer needed (handled globally)
   .status-bar {
-    height: var(--app-status-bar-height);
-    background: var(--background, #f9f9f9);
-    width: 100%;
-    position: relative;
-    z-index: 1000;
+    display: none;
   }
 
   .registration-container {
-    max-width: 400px;
+    max-width: 420px;
     margin: auto;
     text-align: center;
-    padding: 20px 16px;
+    padding: 32px 24px;
+    background: var(--ion-glass-background);
+    border-radius: var(--app-border-radius-2xl);
+    backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 12px 40px rgba(99, 102, 241, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin-top: 40px;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+    }
     
     @media (max-width: 768px) {
-      padding: 16px 12px;
+      padding: 24px 20px;
+      margin: 20px 16px;
     }
     
     @media (max-width: 480px) {
-      padding: 12px 8px;
+      padding: 20px 16px;
+      margin: 16px 12px;
     }
   }
 

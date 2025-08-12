@@ -7,7 +7,12 @@ export interface JwtPayload {
   "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier": string;
   exp: number;
 }
+
 export class TokenService {
+  static getToken(): string | null {
+    return localStorage.getItem('auth_token');
+  }
+
   static getRole(): string | null {
     const token = localStorage.getItem('token');
     if (!token) return null;

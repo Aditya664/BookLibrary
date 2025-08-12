@@ -1,5 +1,6 @@
 ion-content {
-  --background: var(--ion-background-color, #f8f9fa);
+  --background: var(--ion-background-gradient);
+  --padding-top: calc(var(--total-header-height) + 16px); // Status bar + header + extra spacing
   
   ion-grid {
     padding: 0;

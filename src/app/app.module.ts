@@ -9,6 +9,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { AuthService } from './services/auth.service';
+import { TokenService } from './services/token.service';
 
 
 @NgModule({
@@ -18,7 +19,7 @@ import { AuthService } from './services/auth.service';
     scrollPadding: false,      
     inputBlurring: false,      
   }), AppRoutingModule,ReactiveFormsModule ],
-  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },AuthService],
+  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },AuthService,TokenService],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

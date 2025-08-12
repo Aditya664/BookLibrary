@@ -1,0 +1,450 @@
+// Uber-Style Book Details Page - Matched to Dashboard Theme
+@import 'src/app/shared/styles/loader';
+@import '../../global.scss';
+@import "src/theme/variables";
+
+:host {
+  display: block;
+  --header-height: 56px;
+  
+  // Uber-style color system (matching dashboard exactly)
+  --uber-bg: #ffffff;
+  --uber-text: #000000;
+  --uber-text-secondary: #6b7280;
+  --uber-border: #e5e7eb;
+  --uber-card-bg: #ffffff;
+  --uber-green: #00d4aa;
+  --uber-blue: #1fbad3;
+  
+  // Uber spacing system (matching dashboard)
+  --uber-spacing-xs: 4px;
+  --uber-spacing-sm: 8px;
+  --uber-spacing-md: 16px;
+  --uber-spacing-lg: 24px;
+  --uber-spacing-xl: 32px;
+  --uber-spacing-2xl: 48px;
+  --uber-spacing-3xl: 64px;
+}
+
+// Uber-style card mixin
+@mixin uber-card {
+  background: var(--uber-card-bg);
+  border: 1px solid var(--uber-border);
+  border-radius: 12px;
+  transition: all 0.15s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Uber-style section spacing
+@mixin uber-section-spacing {
+  margin-bottom: var(--uber-spacing-xl);
+  
+  @media (max-width: 768px) {
+    margin-bottom: var(--uber-spacing-lg);
+  }
+}
+
+// Gradient classes for book placeholders
+.gradient-blue { background: linear-gradient(135deg, #667eea, #764ba2); }
+.gradient-purple { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.gradient-pink { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.gradient-orange { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+.gradient-red { background: linear-gradient(135deg, #fa709a, #fee140); }
+.gradient-green { background: linear-gradient(135deg, #a8edea, #fed6e3); }
+.gradient-teal { background: linear-gradient(135deg, #ff9a9e, #fecfef); }
+.gradient-indigo { background: linear-gradient(135deg, #ffecd2, #fcb69f); }
+
+.uber-dashboard {
+  --ion-background-color: var(--uber-bg);
+  --background: var(--uber-bg);
+  font-family: var(--ion-font-family);
+  color: var(--uber-text);
+  line-height: 1.4;
+  min-height: 100vh;
+
+  // Uber-style header (matching dashboard)
+  .uber-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--header-height);
+    background: var(--uber-bg);
+    border-bottom: 1px solid var(--uber-border);
+    display: flex;
+    align-items: center;
+    padding: 0 var(--uber-spacing-md);
+    z-index: 1000;
+    transition: all 0.15s ease;
+    
+    &.scrolled {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .back-btn, .action-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: transparent;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--uber-text);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      
+      &:hover {
+        background: #f3f4f6;
+      }
+      
+      ion-icon {
+        font-size: 20px;
+      }
+    }
+    
+    .header-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--uber-text);
+      margin: 0;
+    }
+    
+    .spacer {
+      flex: 1;
+    }
+  }
+  
+  // Uber-style content area
+  ion-content {
+    --padding-top: calc(var(--header-height) + var(--uber-spacing-lg));
+    --padding-start: var(--uber-spacing-lg);
+    --padding-end: var(--uber-spacing-lg);
+    --background: var(--uber-bg);
+    --color: var(--uber-text);
+  }
+  
+  // Uber-style hero section
+  .uber-hero {
+    @include uber-section-spacing;
+    
+    .uber-hero-container {
+      display: flex;
+      gap: var(--uber-spacing-lg);
+      
+      @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+    }
+    
+    .uber-hero-cover {
+      flex-shrink: 0;
+      width: 160px;
+      height: 240px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      
+      .uber-hero-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      
+      .uber-placeholder-cover {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        .uber-book-initials {
+          font-size: 32px;
+          font-weight: 700;
+          color: white;
+        }
+      }
+    }
+    
+    .uber-hero-content {
+      flex: 1;
+      
+      .uber-hero-header {
+        margin-bottom: var(--uber-spacing-lg);
+        
+        .book-title {
+          font-size: 28px;
+          font-weight: 700;
+          color: var(--uber-text);
+          margin: 0 0 var(--uber-spacing-sm) 0;
+          line-height: 1.2;
+        }
+        
+        .book-author {
+          font-size: 16px;
+          color: var(--uber-text-secondary);
+          margin: 0;
+        }
+      }
+      
+      .book-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--uber-spacing-lg);
+        margin-bottom: var(--uber-spacing-lg);
+        
+        .meta-item {
+          display: flex;
+          flex-direction: column;
+          gap: var(--uber-spacing-xs);
+          
+          .meta-label {
+            font-size: 12px;
+            color: var(--uber-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+          }
+          
+          .meta-value {
+            font-size: 14px;
+            color: var(--uber-text);
+            font-weight: 500;
+          }
+        }
+      }
+      
+      .book-actions {
+        display: flex;
+        gap: var(--uber-spacing-md);
+        flex-wrap: wrap;
+        
+        .action-button {
+          height: 48px;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 16px;
+          transition: all 0.15s ease;
+          border: none;
+          cursor: pointer;
+          
+          &.primary {
+            background: var(--uber-text);
+            color: white;
+            padding: 0 var(--uber-spacing-lg);
+            
+            &:hover {
+              background: #374151;
+            }
+          }
+          
+          &.secondary {
+            background: transparent;
+            color: var(--uber-text);
+            border: 1px solid var(--uber-border);
+            padding: 0 var(--uber-spacing-lg);
+            
+            &:hover {
+              background: #f3f4f6;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // Uber-style details grid
+  .uber-details-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--uber-spacing-xl);
+    
+    @media (min-width: 768px) {
+      grid-template-columns: 2fr 1fr;
+    }
+    
+    .details-section {
+      @include uber-card;
+      padding: var(--uber-spacing-lg);
+      
+      .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--uber-text);
+        margin: 0 0 var(--uber-spacing-md) 0;
+      }
+      
+      .section-content {
+        color: var(--uber-text-secondary);
+        line-height: 1.6;
+        
+        p {
+          margin: 0 0 var(--uber-spacing-md) 0;
+          
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+      
+      // Book stats styling
+      .book-stats {
+        display: flex;
+        flex-direction: column;
+        gap: var(--uber-spacing-md);
+        
+        .stat-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: var(--uber-spacing-sm) 0;
+          border-bottom: 1px solid var(--uber-border);
+          
+          &:last-child {
+            border-bottom: none;
+          }
+          
+          .stat-label {
+            font-size: 14px;
+            color: var(--uber-text-secondary);
+          }
+          
+          .stat-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--uber-text);
+          }
+        }
+      }
+      
+      // Recommended books styling
+      .recommended-books {
+        .book-list {
+          display: flex;
+          flex-direction: column;
+          gap: var(--uber-spacing-md);
+          
+          .book-item {
+            display: flex;
+            gap: var(--uber-spacing-md);
+            padding: var(--uber-spacing-sm);
+            border-radius: 8px;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            
+            &:hover {
+              background: #f9fafb;
+            }
+            
+            .book-cover {
+              width: 48px;
+              height: 72px;
+              border-radius: 6px;
+              overflow: hidden;
+              flex-shrink: 0;
+              
+              img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+              }
+              
+              &.placeholder-cover {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                
+                .book-initials {
+                  font-size: 14px;
+                  font-weight: 700;
+                  color: white;
+                }
+              }
+            }
+            
+            .book-info {
+              flex: 1;
+              
+              .book-title {
+                font-size: 14px;
+                font-weight: 600;
+                color: var(--uber-text);
+                margin: 0 0 var(--uber-spacing-xs) 0;
+                line-height: 1.3;
+              }
+              
+              .book-author {
+                font-size: 12px;
+                color: var(--uber-text-secondary);
+                margin: 0;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Loading state
+.modern-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--uber-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .uber-dashboard {
+    .uber-hero {
+      .uber-hero-cover {
+        width: 120px;
+        height: 180px;
+      }
+      
+      .uber-hero-content {
+        .uber-hero-header {
+          .book-title {
+            font-size: 24px;
+          }
+        }
+        
+        .book-meta {
+          gap: var(--uber-spacing-md);
+        }
+        
+        .book-actions {
+          justify-content: center;
+          
+          .action-button {
+            flex: 1;
+            min-width: 120px;
+          }
+        }
+      }
+    }
+    
+    .uber-details-grid {
+      .details-section {
+        padding: var(--uber-spacing-md);
+        
+        .section-title {
+          font-size: 18px;
+        }
+      }
+    }
+  }
+}

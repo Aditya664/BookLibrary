@@ -1,0 +1,88 @@
+// Modern Loader Styles
+@mixin modern-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--app-background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(10px);
+  
+  .loader-content {
+    text-align: center;
+    max-width: 280px;
+    padding: 2rem;
+    border-radius: var(--app-border-radius-xl);
+    background: var(--app-card-background);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transform: translateY(-20px);
+    opacity: 0;
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+  
+  .loader-text {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--ion-text-color);
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .loader-subtext {
+    font-size: 0.9rem;
+    color: var(--ion-color-medium);
+    margin-bottom: 1.5rem;
+  }
+  
+  .loader-spinner {
+    display: flex;
+    justify-content: center;
+    margin: 1rem 0;
+    
+    .spinner {
+      width: 60px;
+      height: 60px;
+      position: relative;
+      margin: 0 auto;
+    }
+    
+    .double-bounce1, .double-bounce2 {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background-color: var(--ion-color-primary);
+      opacity: 0.6;
+      position: absolute;
+      top: 0;
+      left: 0;
+      animation: sk-bounce 2.0s infinite ease-in-out;
+    }
+    
+    .double-bounce2 {
+      animation-delay: -1.0s;
+    }
+  }
+}
+
+@keyframes sk-bounce {
+  0%, 100% { 
+    transform: scale(0.0);
+  } 50% { 
+    transform: scale(1.0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

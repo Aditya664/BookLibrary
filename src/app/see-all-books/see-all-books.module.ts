@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { SeeAllBooksPageRoutingModule } from './see-all-books-routing.module';
 
 import { SeeAllBooksPage } from './see-all-books.page';
+import { LoaderComponent } from '../shared/components/loader/loader.component';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    SeeAllBooksPageRoutingModule
+    SeeAllBooksPageRoutingModule,
+    LoaderComponent
   ],
   exports:[SeeAllBooksPage],
   declarations: [SeeAllBooksPage]

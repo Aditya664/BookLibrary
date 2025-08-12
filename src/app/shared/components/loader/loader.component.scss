@@ -1,0 +1,9 @@
+@import 'src/app/shared/styles/loader';
+
+:host {
+  display: block;
+}
+
+.modern-loader {
+  @include modern-loader;
+}

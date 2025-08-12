@@ -7,14 +7,19 @@ import { IonicModule } from '@ionic/angular';
 import { BookDetailsPageRoutingModule } from './book-details-routing.module';
 
 import { BookDetailsPage } from './book-details.page';
+import { LoaderComponent } from '../shared/components/loader/loader.component';
+import { TruncatePipe } from '../shared/pipes/truncate.pipe';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    BookDetailsPageRoutingModule
+    BookDetailsPageRoutingModule,
+    LoaderComponent,
+    TruncatePipe
   ],
-  declarations: [BookDetailsPage]
+  declarations: [BookDetailsPage],
+  exports: [],
 })
 export class BookDetailsPageModule {}

@@ -1,367 +1,410 @@
-<ng-container *ngIf="isLoading">
-  <div class="spinner-fullscreen">
-    <ion-spinner name="crescent"></ion-spinner>
-  </div>
-</ng-container>
 
-<ng-container *ngIf="!isLoading">
-  <ion-content class="modern-dashboard" [fullscreen]="true">
-    <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
-      <ion-refresher-content
-        pullingIcon="sparkles-outline"
-        refreshingSpinner="crescent"
-        pullingText="Pull down to refresh your library ✨"
-        refreshingText="Refreshing content..."
-      ></ion-refresher-content>
-    </ion-refresher>
-    
-    <!-- Modern Header with Status Bar -->
-    <div class="status-bar"></div>
-    <div class="modern-header">
-      <div class="header-content">
-        <div class="user-info">
-          <div class="avatar-container">
-            <ion-avatar class="modern-avatar">
-              <img
-                src="https://dt2sdf0db8zob.cloudfront.net/wp-content/uploads/2019/12/9-Best-Online-Avatars-and-How-to-Make-Your-Own-for-Free-image21.jpg"
-              />
-            </ion-avatar>
-            <div class="status-indicator"></div>
-          </div>
-          <div class="welcome-section">
-            <h1 class="greeting">Good evening, {{ loggedInUserName }}!</h1>
-            <p class="subtitle">Ready to dive into a new adventure?</p>
+
+<ion-content  class="uber-dashboard" [fullscreen]="true">
+
+  <app-loader
+  *ngIf="isLoading"
+  [text]="'Preparing your library'"
+  subtext="Loading your reading journey..."
+></app-loader>
+
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="sparkles-outline"
+      refreshingSpinner="crescent"
+      pullingText="Pull down to refresh your library ✨"
+      refreshingText="Refreshing content..."
+    ></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Uber Header -->
+  <div class="uber-header">
+    <div class="header-left">
+      <div class="uber-logo">
+        <div class="line-logo">
+          <div class="line-segment"></div>
+          <div class="line-segment"></div>
+          <div class="line-segment"></div>
+        </div>
+      </div>
+      <h1 class="app-name">Book<span>Library</span></h1>
+    </div>
+  </div>
+
+  <!-- Uber Search Section -->
+  <div class="uber-search">
+    <div class="search-input-container">
+      <ion-searchbar
+        [(ngModel)]="searchQuery"
+        (ionChange)="onSearch($event)"
+        placeholder="Search books, authors, genres..."
+        [debounce]="300"
+        [showClearButton]="'always'"
+        (ionClear)="clearSearch()"
+        class="search-bar"
+        [searchIcon]="null"
+      ></ion-searchbar>
+      <button
+        class="filter-btn"
+        (click)="openFilters()"
+        title="Filter and sort"
+      >
+        <ion-icon name="filter-outline"></ion-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Search Results -->
+  <div
+    class="search-results"
+    *ngIf="showSearchResults && filteredBooks.length > 0"
+  >
+    <div class="section-title">Search Results</div>
+    <div
+      class="result-item"
+      *ngFor="let book of filteredBooks"
+      (click)="openBook(book)"
+    >
+      <ng-container *ngIf="book.image; else placeholderImage">
+        <img [src]="book.image" [alt]="book.title" class="result-image" />
+      </ng-container>
+      <ng-template #placeholderImage>
+        <div
+          class="result-image placeholder-cover"
+          [ngClass]="getGradientClass(book.title)"
+        >
+          <span>{{ getInitials(book.title) }}</span>
+        </div>
+      </ng-template>
+      <div class="result-info">
+        <h4>{{book.title}}</h4>
+        <p>{{book.author}}</p>
+      </div>
+      <ion-icon name="chevron-forward-outline" class="result-arrow"></ion-icon>
+    </div>
+  </div>
+
+  <div
+    class="no-results"
+    *ngIf="showSearchResults && filteredBooks.length === 0"
+  >
+    <div class="no-results-content">
+      <ion-icon name="search-outline"></ion-icon>
+      <p>No books found for "{{searchQuery}}"</p>
+    </div>
+  </div>
+
+  <!-- Quick Stats Section -->
+  <div class="suggestions-section">
+    <div class="section-header">
+      <div class="section-title">Your Library Stats</div>
+    </div>
+    <div class="suggestions-grid">
+      <div class="suggestion-card promo">
+        <div class="suggestion-icon">
+          <ion-icon name="library-outline"></ion-icon>
+        </div>
+        <div class="suggestion-label">
+          {{ (allBooks ?? [])?.length || 0 }} Books
+        </div>
+      </div>
+      <div
+        class="suggestion-card"
+        *ngIf="continueReading"
+        (click)="navigateToReadBook(continueReading.bookId.toString())"
+      >
+        <div class="suggestion-icon">
+          <ion-icon name="play-outline"></ion-icon>
+        </div>
+        <div class="suggestion-label">Continue</div>
+      </div>
+      <div class="suggestion-card" (click)="seeAllBooks()">
+        <div class="suggestion-icon">
+          <ion-icon name="grid-outline"></ion-icon>
+        </div>
+        <div class="suggestion-label">All Books</div>
+      </div>
+      <div class="suggestion-card">
+        <div class="suggestion-icon">
+          <ion-icon name="trophy-outline"></ion-icon>
+        </div>
+        <div class="suggestion-label">5 Done</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Continue Reading Section -->
+  <div class="main-content-section" *ngIf="continueReading">
+    <div class="section-title">Continue Reading</div>
+    <div class="content-cards">
+      <div
+        class="content-card"
+        (click)="navigateToReadBook(continueReading.bookId.toString(), continueReading.currentPage)"
+      >
+        <div class="card-content">
+          <div class="card-title">{{ continueReading.book.title }}</div>
+          <div class="card-subtitle">
+            {{ continueReading.percentage }}% complete
           </div>
         </div>
-        <div class="header-actions">
-          <button class="notification-btn" (click)="toggleNotifications()">
-            <ion-icon name="notifications-outline"></ion-icon>
-            <span class="notification-badge" *ngIf="notificationCount > 0">{{notificationCount}}</span>
-          </button>
+        <div class="card-image">
+          <ion-icon name="book-outline"></ion-icon>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Modern Search Section -->
-    <div class="search-section">
-      <div class="search-container">
-        <ion-searchbar 
-          [(ngModel)]="searchQuery" 
-          (ionInput)="onSearch($event)" 
-          placeholder="Search books, authors..."
-          class="modern-search"
-          (ionClear)="clearSearch()">
-        </ion-searchbar>
-        <button class="filter-btn" (click)="openFilters()">
-          <ion-icon name="options-outline"></ion-icon>
-        </button>
+  <!-- Genres Section (Uber Style Grid) -->
+  <div class="genres-section" *ngIf="genres && genres.length > 0">
+    <div class="section-title">Explore Genres</div>
+    <div class="uber-services-grid">
+      <div
+        class="genre-card"
+        *ngFor="let genre of genres.slice(0, 6); let i = index"
+        (click)="navigateToGenre(genre.name)"
+      >
+        <div class="genre-icon">
+          <ion-icon [name]="getGenreIcon(genre.name)"></ion-icon>
+        </div>
+        <div class="genre-label">{{ genre.name }}</div>
       </div>
-      
-      <div class="search-results" *ngIf="showSearchResults && filteredBooks.length > 0">
-        <div class="result-item" *ngFor="let book of filteredBooks" (click)="openBook(book)">
-          <ng-container *ngIf="book.image; else placeholderImage">
-            <img [src]="book.image" [alt]="book.title" class="result-image">
+    </div>
+  </div>
+
+  <!-- Popular Books by Rating (Horizontal Scroll) -->
+  <div
+    class="popular-books-section"
+    *ngIf="popularBooks && popularBooks.length > 0"
+  >
+    <div class="section-header">
+      <div class="section-title">Popular Books by Rating</div>
+      <button class="see-all-btn" (click)="seeAllBooks()">
+        <span>See all</span>
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+      </button>
+    </div>
+    <div class="books-horizontal-scroll">
+      <div
+        class="book-card"
+        *ngFor="let book of popularBooks?.slice(0, 8) || []"
+        (click)="navigateToBook(book?.id?.toString())"
+      >
+        <div class="book-cover">
+          <ng-container *ngIf="book?.image; else placeholderBook">
+            <img
+              [src]="book.image"
+              [alt]="book?.title || 'Book cover'"
+              loading="lazy"
+            />
           </ng-container>
-          <ng-template #placeholderImage>
-            <div class="result-image placeholder-cover" [ngClass]="getGradientClass(book.title)">
-              <span>{{ getInitials(book.title) }}</span>
+          <ng-template #placeholderBook>
+            <div
+              class="placeholder-book"
+              [ngClass]="getGradientForBook(book.title)"
+            >
+              <div class="book-content">
+                <div class="book-initials">
+                  {{ getInitials(book?.title || '') }}
+                </div>
+                <div class="book-title-overlay">
+                  {{ book?.title || 'Untitled' }}
+                </div>
+              </div>
             </div>
           </ng-template>
-          <div class="result-info">
-            <h4>{{book.title}}</h4>
-            <p>{{book.author}}</p>
+          <div class="rating-badge" *ngIf="book.rating">
+            <ion-icon name="star"></ion-icon>
+            <span>{{ book.rating }}</span>
           </div>
-          <ion-icon name="chevron-forward-outline" class="result-arrow"></ion-icon>
         </div>
-      </div>
-      
-      <div class="no-results" *ngIf="showSearchResults && filteredBooks.length === 0">
-        <ion-icon name="search-outline"></ion-icon>
-        <p>No books found for "{{searchQuery}}"</p>
+        <div class="book-info">
+          <h4 class="book-title">{{ book.title }}</h4>
+          <p class="book-author">{{ book.author }}</p>
+        </div>
       </div>
     </div>
+  </div>
 
-    <!-- Content Grid -->
-    <div class="content-grid">
-      <!-- Quick Stats -->
-      <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-icon">
-            <ion-icon name="library-outline"></ion-icon>
+  <!-- Plan Your Next Read Section -->
+  <div class="plan-section" *ngIf="recentBooks && recentBooks.length > 0">
+    <div class="section-title">Plan your next read</div>
+    <div class="plan-cards">
+      <div
+        class="plan-card small"
+        *ngIf="recentBooks[0]"
+        (click)="navigateToBook(recentBooks[0].id.toString())"
+      >
+        <div class="plan-content">
+          <div class="plan-text">
+            <h3>{{ recentBooks[0].title }}</h3>
+            <p>by {{ recentBooks[0].author }}</p>
           </div>
-          <div class="stat-info">
-            <h3>{{ (allBooks ?? [])?.length || 0 }}</h3>
-            <p>Books</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">
-            <ion-icon name="time-outline"></ion-icon>
-          </div>
-          <div class="stat-info">
-            <h3>12h</h3>
-            <p>This week</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">
-            <ion-icon name="trophy-outline"></ion-icon>
-          </div>
-          <div class="stat-info">
-            <h3>5</h3>
-            <p>Completed</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Categories Section -->
-      <div class="section-card">
-        <div class="section-header">
-          <h2>Explore Genres</h2>
-          <ion-button fill="clear" class="see-all-btn">
-            <span>See all</span>
-            <ion-icon name="chevron-forward-outline"></ion-icon>
-          </ion-button>
-        </div>
-        <div class="categories-grid">
-          <div class="category-card" *ngFor="let cat of genres">
-            <div class="category-icon">
-              <ion-icon [name]="cat.iconName"></ion-icon>
+          <div class="plan-image">
+            <img
+              *ngIf="recentBooks[0].image"
+              [src]="recentBooks[0].image"
+              [alt]="recentBooks[0].title"
+              loading="lazy"
+            />
+            <div
+              *ngIf="!recentBooks[0].image"
+              class="placeholder-plan"
+              [ngClass]="getGradientForBook(recentBooks[0].title)"
+            >
+              <div class="plan-content">
+                <ion-icon name="book-outline"></ion-icon>
+                <div class="plan-title-overlay">
+                  {{ recentBooks[0].title || 'Continue Reading' }}
+                </div>
+              </div>
             </div>
-            <span>{{ cat.name }}</span>
           </div>
         </div>
       </div>
-
-      <!-- Popular Books Section -->
-      <div class="section-card">
-        <div class="section-header">
-          <h2>Trending Now</h2>
-          <ion-button fill="clear" (click)="seeAllBooks()" class="see-all-btn">
-            <span>View all</span>
-            <ion-icon name="chevron-forward-outline"></ion-icon>
-          </ion-button>
+      <div
+        class="plan-card small"
+        *ngIf="recentBooks[1]"
+        (click)="navigateToBook(recentBooks[1].id.toString())"
+      >
+        <div class="plan-content">
+          <div class="plan-text">
+            <h4>{{ recentBooks[1].title }}</h4>
+            <p>{{ recentBooks[1].author }}</p>
+          </div>
+          <div class="plan-image-small">
+            <img
+              *ngIf="recentBooks[1].image"
+              [src]="recentBooks[1].image"
+              [alt]="recentBooks[1].title"
+              loading="lazy"
+            />
+            <div
+              *ngIf="!recentBooks[1].image"
+              class="placeholder-plan-small"
+              [ngClass]="getGradientForBook(recentBooks[1].title)"
+            >
+              <div class="plan-content">
+                <ion-icon name="book-outline"></ion-icon>
+                <div class="plan-title-overlay">
+                  {{ recentBooks[1].title || 'Next Read' }}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="books-carousel">
-          <div
-            class="modern-book-card"
-            *ngFor="let book of popularBooks"
-            (click)="openBook(book)"
+      </div>
+    </div>
+    <!-- Add bottom spacing to prevent hiding behind tabs -->
+    <div class="bottom-spacer"></div>
+  </div>
+</ion-content>
+
+<!-- Notifications Dropdown -->
+<div
+  class="notifications-dropdown"
+  *ngIf="showNotifications"
+  (click)="toggleNotifications()"
+>
+  <div class="notifications-content" (click)="$event.stopPropagation()">
+    <div class="notifications-header">
+      <h3>Notifications</h3>
+      <button class="close-btn" (click)="toggleNotifications()">
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
+    </div>
+    <div class="notifications-list">
+      <div
+        class="notification-item"
+        *ngFor="let notification of notifications"
+        [class.unread]="!notification.read"
+        (click)="markNotificationAsRead(notification.id)"
+      >
+        <div class="notification-content">
+          <h4>{{notification.title}}</h4>
+          <p>{{notification.message}}</p>
+          <span class="notification-time">{{notification.time}}</span>
+        </div>
+        <div class="notification-indicator" *ngIf="!notification.read"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filter Modal -->
+<div class="filter-modal" *ngIf="showFilters" (click)="closeFilters()">
+  <div class="filter-content" (click)="$event.stopPropagation()">
+    <div class="filter-header">
+      <h3>Filter & Sort</h3>
+      <button class="close-btn" (click)="closeFilters()">
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
+    </div>
+
+    <div class="filter-body">
+      <!-- Sort Options -->
+      <div class="filter-section">
+        <h4>Sort By</h4>
+        <div class="sort-options">
+          <button
+            class="sort-option"
+            [class.active]="sortBy === 'title'"
+            (click)="setSortBy('title')"
           >
-            <div class="book-cover">
-              <ng-container *ngIf="book.image; else textPlaceholder">
-                <img
-                  [src]="book.image"
-                  (error)="book.image = ''"
-                  alt="{{ book.title }}"
-                />
-              </ng-container>
-              <ng-template #textPlaceholder>
-                <div class="placeholder-cover" [ngClass]="getGradientClass(book.title)">
-                  <span>{{ getInitials(book.title) }}</span>
-                </div>
-              </ng-template>
-              <div class="book-overlay">
-                <ion-icon name="play-circle-outline"></ion-icon>
-              </div>
-            </div>
-            <div class="book-info">
-              <h4>{{ book.title }}</h4>
-              <p>{{ book.author }}</p>
-              <div class="book-rating">
-                <div class="stars">
-                  <ion-icon 
-                    *ngFor="let star of [1,2,3,4,5]" 
-                    [name]="star <= (book.rating || 0) ? 'star' : 'star-outline'"
-                    [class.filled]="star <= (book.rating || 0)">
-                  </ion-icon>
-                </div>
-                <span class="rating-text">{{ book.rating || 0 }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Continue Reading Section -->
-      <div class="section-card continue-section">
-        <div class="section-header">
-          <h2>Continue Reading</h2>
-          <ion-button fill="clear" size="small" (click)="seeAllBooks()">
-            See All
-            <ion-icon name="chevron-forward" slot="end"></ion-icon>
-          </ion-button>
-        </div>
-        <div class="continue-reading-grid">
-          <div class="continue-card">
-            <div class="book-cover-large">
-              <ng-container *ngIf="continueReading?.book?.image && continueReading?.book?.image !== ''; else textPlaceholder">
-                <img [src]="continueReading?.book?.image"  alt="{{ continueReading?.book?.title }}" />
-              </ng-container>
-              <ng-template #textPlaceholder>
-                <div class="placeholder-cover" [ngClass]="getGradientClass(continueReading?.book?.title ?? '')">
-                  <span>{{ getInitials(continueReading?.book?.title ?? '') }}</span>
-                </div>
-              </ng-template>
-            </div>
-            <div class="book-info">
-              <h3>{{ continueReading?.book?.title }}</h3>
-              <p class="author">{{ continueReading?.book?.author }}</p>
-              <div class="progress-bar">
-                <div class="progress" [style.width.%]="continueReading?.percentage"></div>
-              </div>
-              <p class="progress-text">{{ continueReading?.currentPage }} of {{ continueReading?.totalPages}} pages ({{ continueReading?.percentage || 0 }}%)</p>
-              <button class="continue-btn" (click)="openBook(continueReading?.book); $event.stopPropagation()">
-                Continue Reading
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Recent Activity -->
-      <div class="section-card">
-        <div class="section-header">
-          <h2>Recent Activity</h2>
-          <button class="see-all-btn">
-            <span>View all</span>
-            <ion-icon name="chevron-forward-outline"></ion-icon>
+            <ion-icon name="text-outline"></ion-icon>
+            <span>Title</span>
+          </button>
+          <button
+            class="sort-option"
+            [class.active]="sortBy === 'author'"
+            (click)="setSortBy('author')"
+          >
+            <ion-icon name="person-outline"></ion-icon>
+            <span>Author</span>
+          </button>
+          <button
+            class="sort-option"
+            [class.active]="sortBy === 'rating'"
+            (click)="setSortBy('rating')"
+          >
+            <ion-icon name="star-outline"></ion-icon>
+            <span>Rating</span>
+          </button>
+          <button
+            class="sort-option"
+            [class.active]="sortBy === 'recent'"
+            (click)="setSortBy('recent')"
+          >
+            <ion-icon name="time-outline"></ion-icon>
+            <span>Recent</span>
           </button>
         </div>
-        <div class="modern-activity-list">
-          <div class="modern-activity-item" *ngFor="let book of recentBooks" (click)="openBook(book)">
-            <div class="activity-book-cover">
-                <ng-container *ngIf="book.image && book.image !== ''; else textPlaceholder">
-                  <img
-                    [src]="book.image"
-                    (error)="book.image = ''"
-                    alt="{{ book.title }}"
-                  />
-                </ng-container>
-                <ng-template #textPlaceholder>
-                  <div class="activity-placeholder" [ngClass]="getGradientClass(book.title)">
-                    <span>{{ getInitials(book.title) }}</span>
-                  </div>
-                </ng-template>
-            </div>
-            <div class="activity-details">
-              <div class="activity-main">
-                <h4>{{ book.title }}</h4>
-                <p>by {{ book.author }}</p>
-              </div>
-              <div class="activity-meta">
-                <div class="activity-type">
-                  <ion-icon name="bookmark-outline"></ion-icon>
-                  <span>Added to library</span>
-                </div>
-                <div class="activity-time">{{ getTimeAgo(book.createdAt) }}</div>
-              </div>
-            </div>
-            <div class="activity-action">
-              <ion-icon name="chevron-forward-outline"></ion-icon>
-            </div>
-          </div>
+      </div>
+
+      <!-- Genre Filters -->
+      <div class="filter-section">
+        <h4>Genres</h4>
+        <div class="genre-filters">
+          <button
+            *ngFor="let genre of genres"
+            class="genre-chip"
+            [class.selected]="selectedGenres.includes(genre.name)"
+            (click)="toggleGenreFilter(genre.name)"
+          >
+            {{genre.name}}
+          </button>
         </div>
       </div>
     </div>
-  </ion-content>
 
-  <!-- Notifications Dropdown -->
-  <div class="notifications-dropdown" *ngIf="showNotifications" (click)="toggleNotifications()">
-    <div class="notifications-content" (click)="$event.stopPropagation()">
-      <div class="notifications-header">
-        <h3>Notifications</h3>
-        <button class="close-btn" (click)="toggleNotifications()">
-          <ion-icon name="close-outline"></ion-icon>
-        </button>
-      </div>
-      <div class="notifications-list">
-        <div class="notification-item" 
-             *ngFor="let notification of notifications" 
-             [class.unread]="!notification.read"
-             (click)="markNotificationAsRead(notification.id)">
-          <div class="notification-content">
-            <h4>{{notification.title}}</h4>
-            <p>{{notification.message}}</p>
-            <span class="notification-time">{{notification.time}}</span>
-          </div>
-          <div class="notification-indicator" *ngIf="!notification.read"></div>
-        </div>
-      </div>
+    <div class="filter-footer">
+      <button class="clear-btn" (click)="clearFilters()">
+        <ion-icon name="refresh-outline"></ion-icon>
+        <span>Clear All</span>
+      </button>
+      <button class="apply-btn" (click)="closeFilters()">
+        <ion-icon name="checkmark-outline"></ion-icon>
+        <span>Apply</span>
+      </button>
     </div>
   </div>
-
-  <!-- Filter Modal -->
-  <div class="filter-modal" *ngIf="showFilters" (click)="closeFilters()">
-    <div class="filter-content" (click)="$event.stopPropagation()">
-      <div class="filter-header">
-        <h3>Filter & Sort</h3>
-        <button class="close-btn" (click)="closeFilters()">
-          <ion-icon name="close-outline"></ion-icon>
-        </button>
-      </div>
-      
-      <div class="filter-body">
-        <!-- Sort Options -->
-        <div class="filter-section">
-          <h4>Sort By</h4>
-          <div class="sort-options">
-            <button 
-              class="sort-option" 
-              [class.active]="sortBy === 'title'"
-              (click)="setSortBy('title')">
-              <ion-icon name="text-outline"></ion-icon>
-              <span>Title</span>
-            </button>
-            <button 
-              class="sort-option" 
-              [class.active]="sortBy === 'author'"
-              (click)="setSortBy('author')">
-              <ion-icon name="person-outline"></ion-icon>
-              <span>Author</span>
-            </button>
-            <button 
-              class="sort-option" 
-              [class.active]="sortBy === 'rating'"
-              (click)="setSortBy('rating')">
-              <ion-icon name="star-outline"></ion-icon>
-              <span>Rating</span>
-            </button>
-            <button 
-              class="sort-option" 
-              [class.active]="sortBy === 'recent'"
-              (click)="setSortBy('recent')">
-              <ion-icon name="time-outline"></ion-icon>
-              <span>Recent</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Genre Filters -->
-        <div class="filter-section">
-          <h4>Genres</h4>
-          <div class="genre-filters">
-            <button 
-              *ngFor="let genre of availableGenres"
-              class="genre-chip"
-              [class.selected]="selectedGenres.includes(genre)"
-              (click)="toggleGenreFilter(genre)">
-              {{genre}}
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      <div class="filter-footer">
-        <button class="clear-btn" (click)="clearFilters()">
-          <ion-icon name="refresh-outline"></ion-icon>
-          <span>Clear All</span>
-        </button>
-        <button class="apply-btn" (click)="closeFilters()">
-          <ion-icon name="checkmark-outline"></ion-icon>
-          <span>Apply</span>
-        </button>
-      </div>
-    </div>
-  </div>
-</ng-container>
+</div>

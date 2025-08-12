@@ -17,9 +17,21 @@ export class AppComponent  implements OnInit{
   initializeApp() {
     this.platform.ready().then(() => {
       if (this.platform.is('capacitor')) {
+        // Enable fullscreen mode with status bar overlay for immersive experience
         StatusBar.setOverlaysWebView({ overlay: true });
-        StatusBar.setStyle({ style: Style.Dark });
-        StatusBar.setBackgroundColor({ color: '#ffffff' });
+        StatusBar.setStyle({ style: Style.Light });
+        StatusBar.setBackgroundColor({ color: 'transparent' });
+        
+        // Set status bar height for proper content spacing
+        const statusBarHeight = this.platform.is('ios') ? '44px' : '24px';
+        document.documentElement.style.setProperty('--actual-status-bar-height', statusBarHeight);
+        
+        // Add safe area padding for fullscreen layout
+        document.documentElement.style.setProperty('--ion-safe-area-top', statusBarHeight);
+      } else {
+        // For web/browser, set status bar height to 0
+        document.documentElement.style.setProperty('--actual-status-bar-height', '0px');
+        document.documentElement.style.setProperty('--ion-safe-area-top', '0px');
       }
     });
   }

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { BookService } from '../services/book.service';
 import { TokenService } from '../services/token.service';
 import { ReadingProgressResponseDto } from '../Model/ApiResponse';
@@ -10,6 +11,18 @@ import {
 import { catchError, forkJoin, of } from 'rxjs';
 import { LoadingController, NavController, ToastController } from '@ionic/angular';
 
+interface Book {
+  id?: string | number;
+  title?: string;
+  author?: string;
+  image?: string;
+  genres?: Array<{ name: string }>;
+  averageRating?: number;
+  rating?: number; // Added for backward compatibility
+  createdAt?: string;
+  // Add other book properties as needed
+}
+
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.page.html',
@@ -17,24 +30,24 @@ import { LoadingController, NavController, ToastController } from '@ionic/angula
   standalone: false,
 })
 export class DashboardPage implements OnInit {
-  loggedInUserName = localStorage.getItem('fullName');
-  genres: GenreResponseWithBooks[] = [];
-  popularBooks: BookResponse[] = [];
-  allBooks: BookResponse[] = [];
-  continueReading: ReadingProgressResponseDto  | null = null;
-  isLoading = false;
-  recentBooks: BookResponse[] = [];
-  userId: string | null = null;
-
-
-  constructor(
-    private bookService: BookService,
-    private nav: NavController,
-  ) {}
-
+  // Search and filter properties
   searchQuery = '';
   filteredBooks: BookResponse[] = [];
   showSearchResults = false;
+  showFilters = false;
+  availableGenres: string[] = [];
+  selectedGenres: string[] = [];
+  sortBy: 'title' | 'author' | 'rating' | 'recent' = 'recent';
+
+  // Data properties
+  popularBooks: BookResponse[] = [];
+  genres: GenreResponseWithBooks[] = [];
+  recentBooks: BookResponse[] = [];
+  allBooks: BookResponse[] = [];
+  continueReading: ReadingProgressResponseDto | null = null;
+  isLoading = false;
+  loggedInUserName = localStorage.getItem('fullName');
+  userId: string | null = null;
   notificationCount = 3;
   showNotifications = false;
   notifications = [
@@ -61,28 +74,134 @@ export class DashboardPage implements OnInit {
     },
   ];
 
-  onSearch(event: any) {
-    const val = event.target.value.toLowerCase();
-    this.searchQuery = val;
+  constructor(
+    private bookService: BookService,
+    private nav: NavController,
+    private router: Router,
+  ) {}
 
-    if (val.trim() === '') {
+
+  onSearch(event: any) {
+    const val = event.detail?.value ? event.detail.value.toString().toLowerCase().trim() : '';
+    this.searchQuery = val;
+    this.applyFilters();
+  }
+
+  private applySearch() {
+    if (!this.searchQuery.trim()) {
       this.showSearchResults = false;
       this.filteredBooks = [];
       return;
     }
 
-    this.filteredBooks = this.allBooks.filter(
-      (book) =>
-        book.title.toLowerCase().includes(val) ||
-        book.author.toLowerCase().includes(val)
-    );
+    if (!this.allBooks?.length) {
+      console.warn('No books available for search');
+      this.showSearchResults = true;
+      this.filteredBooks = [];
+      return;
+    }
+
+    const searchLower = this.searchQuery.toLowerCase();
+    this.filteredBooks = this.allBooks.filter(book => {
+      const titleMatch = book.title?.toLowerCase().includes(searchLower) || false;
+      const authorMatch = book.author?.toLowerCase().includes(searchLower) || false;
+      const genreMatch = book.genres?.some(genre =>
+        genre?.name?.toLowerCase().includes(searchLower)
+      ) || false;
+      return titleMatch || authorMatch || genreMatch;
+    });
+
     this.showSearchResults = true;
   }
 
   clearSearch() {
+    console.log('Clearing search');
     this.searchQuery = '';
     this.showSearchResults = false;
     this.filteredBooks = [];
+  }
+
+  getInitials(title?: string): string {
+    if (!title) return '';
+    return title
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .substring(0, 2)
+      .toUpperCase();
+  }
+
+  getGradientForBook(title: string): string {
+      const gradients = [
+        'gradient-1', // Blue to Purple
+        'gradient-2', // Green to Cyan
+        'gradient-3', // Orange to Red
+        'gradient-4', // Pink to Purple
+        'gradient-5', // Teal to Blue
+        'gradient-6'  // Yellow to Orange
+      ];
+  
+      // Create a consistent hash from the title
+      const hash = Array.from(title).reduce(
+        (acc, char) => acc + char.charCodeAt(0),
+        0
+      );
+      
+      return gradients[hash % gradients.length];
+  }
+
+  getGradientClass(title: string): string {
+    return this.getGradientForBook(title);
+  }
+
+  openBook(book: any) {
+    this.nav.navigateForward(['/book-detail', book.id]);
+  }
+
+  getGenreIcon(genreName: string): string {
+    const iconMap: { [key: string]: string } = {
+      'Fiction': 'book-outline',
+      'Non-Fiction': 'library-outline',
+      'Science': 'flask-outline',
+      'Technology': 'laptop-outline',
+      'History': 'time-outline',
+      'Biography': 'person-outline',
+      'Romance': 'heart-outline',
+      'Mystery': 'search-outline',
+      'Fantasy': 'planet-outline',
+      'Horror': 'skull-outline'
+    };
+    return iconMap[genreName] || 'book-outline';
+  }
+
+  navigateToGenre(genreName: string) {
+    this.router.navigate(['/see-all-books'], {
+      queryParams: { genre: genreName }
+    });
+  }
+
+  navigateToBook(bookId?: string) {
+    this.nav.navigateForward(['/book-detail', bookId]);
+  }
+
+  navigateToReadBook(bookId?: string, page?: number) {
+    debugger
+    this.nav.navigateForward(['/read-book', bookId]);
+  }
+
+  seeAllBooks() {
+    this.router.navigate(['/see-all-books']);
+  }
+
+  openReadingSchedule() {
+    console.log('Opening reading schedule...');
+  }
+
+  handleRefresh(event: any) {
+    setTimeout(() => {
+      this.fetchData();
+      event.target.complete();
+    }, 1500);
   }
 
   openSearch() {
@@ -105,17 +224,27 @@ export class DashboardPage implements OnInit {
     this.notificationCount = this.notifications.filter((n) => !n.read).length;
   }
 
-  showFilters = false;
-  selectedGenres: string[] = [];
-  availableGenres: string[] = [];
-  sortBy = 'title';
+ 
 
   openFilters() {
+    // Initialize available genres if not already set
+    if (this.availableGenres.length === 0 && this.allBooks?.length) {
+      const allGenres = new Set<string>();
+      this.allBooks.forEach(book => {
+        book.genres?.forEach(genre => {
+          if (genre?.name) {
+            allGenres.add(genre.name);
+          }
+        });
+      });
+      this.availableGenres = Array.from(allGenres).sort();
+    }
     this.showFilters = true;
   }
 
   closeFilters() {
     this.showFilters = false;
+    this.applyFilters();
   }
 
   toggleGenreFilter(genre: string) {
@@ -125,108 +254,114 @@ export class DashboardPage implements OnInit {
     } else {
       this.selectedGenres.push(genre);
     }
-    this.applyFilters();
   }
 
-  setSortBy(sortOption: string) {
+  setSortBy(sortOption: 'title' | 'author' | 'rating' | 'recent') {
     this.sortBy = sortOption;
     this.applyFilters();
   }
 
   applyFilters() {
-    let filtered = [...this.allBooks];
-
-    // Apply search query
     if (this.searchQuery.trim()) {
-      filtered = filtered.filter((book) =>
-        book.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        book.author.toLowerCase().includes(this.searchQuery.toLowerCase())
-      );
+      this.applySearch();
+    } else if (this.selectedGenres.length > 0 || this.sortBy !== 'title') {
+      this.filteredBooks = this.filterBooks();
+      this.showSearchResults = true;
+    } else {
+      this.showSearchResults = false;
+      this.filteredBooks = [];
     }
-
-    // Apply genre filters
-    if (this.selectedGenres.length > 0) {
-      filtered = filtered.filter((book) =>
-        book.genres && book.genres.some((genre) => this.selectedGenres.includes(genre.name))
-      );
-    }
-
-    // Apply sorting
-    switch (this.sortBy) {
-      case 'title':
-        filtered.sort((a, b) => a.title.localeCompare(b.title));
-        break;
-      case 'author':
-        filtered.sort((a, b) => a.author.localeCompare(b.author));
-        break;
-      case 'rating':
-        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        break;
-      case 'recent':
-        filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        break;
-    }
-
-    this.filteredBooks = filtered;
   }
 
   clearFilters() {
     this.selectedGenres = [];
     this.sortBy = 'title';
-    this.applyFilters();
+    this.searchQuery = '';
+    this.showSearchResults = false;
+    this.filteredBooks = [];
   }
 
-  getInitials(title: string): string {
-    if (!title) return '';
-    return title
-      .split(' ')
-      .slice(0, 2)
-      .map((word) => word.charAt(0))
-      .join('')
-      .toUpperCase();
-  }
+  private filterBooks(): BookResponse[] {
+    if (!this.allBooks?.length) return [];
 
-  getGradientClass(title: string): string {
-    const gradients = [
-      'gradient-red',
-      'gradient-blue',
-      'gradient-purple',
-      'gradient-green',
-      'gradient-orange',
-      'gradient-teal',
-      'gradient-pink',
-    ];
+    let filtered = [...this.allBooks];
 
-    const hash = Array.from(title).reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return gradients[hash % gradients.length];
+    // Apply genre filters
+    if (this.selectedGenres.length > 0) {
+      filtered = filtered.filter(book =>
+        book.genres?.some(genre =>
+          genre?.name && this.selectedGenres.includes(genre.name)
+        )
+      );
+    }
+
+    // Apply sorting
+    return filtered.sort((a, b) => {
+      switch (this.sortBy) {
+        case 'title':
+          return (a.title || '').localeCompare(b.title || '');
+        case 'author':
+          return (a.author || '').localeCompare(b.author || '');
+        case 'rating':
+          return (b.rating || 0) - (a.rating || 0);
+        case 'recent':
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
   }
 
   fetchData(): void {
     this.isLoading = true;
-  
+    const userId = TokenService.getUserId();
+    
     forkJoin({
-      popularBooks: this.bookService.getPopularBooks()
-        .pipe(catchError(() => of({ data: [] }))),
-      genres: this.bookService.getAllGenres()
-        .pipe(catchError(() => of({ data: [] }))),
-      recentBooks: this.bookService.getRecentlyAddedBooks()
-        .pipe(catchError(() => of({ data: [] }))),
-      allBooks: this.bookService.getAllBooks()
-        .pipe(catchError(() => of({ data: [] }))),
-      continueReading: this.bookService.getLastReadBook(TokenService.getUserId() ?? "")
-        .pipe(catchError(() => of({ data: null })))
+      popularBooks: this.bookService.getPopularBooks().pipe(
+        catchError((error) => {
+          console.error('Error loading popular books:', error);
+          return of({ data: [] as BookResponse[] });
+        })
+      ),
+      genres: this.bookService.getAllGenres().pipe(
+        catchError((error) => {
+          console.error('Error loading genres:', error);
+          return of({ data: [] as GenreResponseWithBooks[] });
+        })
+      ),
+      recentBooks: this.bookService.getRecentlyAddedBooks().pipe(
+        catchError((error) => {
+          console.error('Error loading recent books:', error);
+          return of({ data: [] as BookResponse[] });
+        })
+      ),
+      allBooks: this.bookService.getAllBooks().pipe(
+        catchError((error) => {
+          console.error('Error loading all books:', error);
+          return of({ data: [] as BookResponse[] });
+        })
+      ),
+      continueReading: userId ? this.bookService.getLastReadBook(userId).pipe(
+        catchError((error) => {
+          console.error('Error loading continue reading:', error);
+          return of({ data: null });
+        })
+      ) : of({ data: null })
     }).subscribe({
-      next: ({ popularBooks, genres, recentBooks, allBooks, continueReading }) => {
-        this.popularBooks = popularBooks.data.slice(0, 10);
-        this.genres = genres.data;
-        this.availableGenres = [...this.genres].map((genre) => genre.name);
-        this.recentBooks = recentBooks.data;
-        this.allBooks = allBooks.data;
-        this.continueReading = continueReading.data;
+      next: (responses) => {
+        this.popularBooks = responses.popularBooks.data?.slice(0, 10) || [];
+        this.genres = responses.genres.data || [];
+        this.recentBooks = responses.recentBooks.data || [];
+        this.allBooks = responses.allBooks.data || [];
+        this.continueReading = responses.continueReading?.data || null;
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error loading data', error);
+        console.error('Error in fetchData:', error);
         this.isLoading = false;
       }
     });
@@ -235,57 +370,5 @@ export class DashboardPage implements OnInit {
   ngOnInit(): void {
     this.userId = TokenService.getUserId();
     this.fetchData();
-  }
-
-  loadContinueReading() {
-    if (!this.userId) {
-      console.warn('No user ID found for continue reading');
-      return;
-    }
-  }
-
-  navigateToBook(bookId: string) {
-    this.nav.navigateRoot(['/book-detail', bookId]);
-  }
-
-  navigateToReadBook(bookId: string | number) {
-    const id = typeof bookId === 'number' ? bookId.toString() : bookId;
-    this.nav.navigateForward(['/read-book', id]);
-  }
-
-
-
-  seeAllBooks() {
-    this.nav.navigateForward(['/see-all-books']);
-  }
-
-  openBook(book: any) {
-    const id = (book?.id ?? '').toString();
-    this.nav.navigateForward(['/book-detail', id]);
-  }
-
-  handleRefresh(event: any) {
-    setTimeout(() => {
-      this.fetchData();
-      event.target.complete();
-    }, 1500);
-  }
-
-  getTimeAgo(dateString: string): string {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInMs = now.getTime() - date.getTime();
-    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-    const diffInDays = Math.floor(diffInHours / 24);
-
-    if (diffInHours < 1) {
-      return 'Just now';
-    } else if (diffInHours < 24) {
-      return `${diffInHours}h ago`;
-    } else if (diffInDays < 7) {
-      return `${diffInDays}d ago`;
-    } else {
-      return date.toLocaleDateString();
-    }
   }
 }

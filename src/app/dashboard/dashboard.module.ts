@@ -5,8 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 import { DashboardPageRoutingModule } from './dashboard-routing.module';
-
 import { DashboardPage } from './dashboard.page';
+import { LoaderComponent } from '../shared/components/loader/loader.component';
 
 @NgModule({
   imports: [
@@ -14,8 +14,12 @@ import { DashboardPage } from './dashboard.page';
     FormsModule,
     IonicModule,
     DashboardPageRoutingModule,
+    LoaderComponent
   ],
-  declarations:[    DashboardPage],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  declarations: [
+    DashboardPage,
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  exports: [LoaderComponent]
 })
 export class DashboardPageModule {}

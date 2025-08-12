@@ -27,6 +27,8 @@ export class SeeAllBooksPage implements OnInit {
   selectedGenres: string[] = [];
   sortBy: 'title' | 'rating' | 'author' | 'recent' = 'title';
   bookmarkedBooks: Set<number> = new Set();
+  headerScrolled = false;
+  private scrollThreshold = 50; // Pixels to scroll before header changes
 
   filterBooksByCategory() {
     if (this.selectedGenre === 'All') {
@@ -55,20 +57,22 @@ export class SeeAllBooksPage implements OnInit {
   }
 
   getGradientClass(title: string): string {
+    // Use the same gradient pattern as the dashboard
     const gradients = [
-      'gradient-red',
-      'gradient-blue',
-      'gradient-purple',
-      'gradient-green',
-      'gradient-orange',
-      'gradient-teal',
-      'gradient-pink',
+      'gradient-1', // Blue to Purple
+      'gradient-2', // Green to Cyan
+      'gradient-3', // Orange to Red
+      'gradient-4', // Pink to Purple
+      'gradient-5', // Teal to Blue
+      'gradient-6'  // Yellow to Orange
     ];
 
+    // Create a consistent hash from the title
     const hash = Array.from(title).reduce(
       (acc, char) => acc + char.charCodeAt(0),
       0
     );
+    
     return gradients[hash % gradients.length];
   }
 
@@ -96,6 +100,12 @@ export class SeeAllBooksPage implements OnInit {
   
 
   
+  // Clear search query and reset filtered books
+  clearSearch() {
+    this.searchQuery = '';
+    this.filteredBooks = [...this.allBooks];
+  }
+
   onSearch(event: any) {
     const val = event.target.value?.toLowerCase() || '';
     this.selectedGenre = 'All';
@@ -118,8 +128,14 @@ export class SeeAllBooksPage implements OnInit {
     private bookService: BookService,
     private navCtrl: NavController,
     private platform: Platform,
-    private router: Router
-  ) {}
+    private router: Router,
+    private route: ActivatedRoute
+  ) { 
+    // Handle hardware back button
+    this.platform.backButton.subscribeWithPriority(10, () => {
+      this.goBack();
+    });
+  }
 
   openBook(book: any) {
     this.navCtrl.navigateRoot(['/book-detail', book.id]);
@@ -263,8 +279,13 @@ export class SeeAllBooksPage implements OnInit {
     }
   }
 
+  // Handle scroll events for header
+  onScroll(event: any) {
+    const scrollTop = event.detail.scrollTop;
+    this.headerScrolled = scrollTop > this.scrollThreshold;
+  }
+
   ngOnInit(): void {
-    // Hardware back button is now handled globally in tabs.page.ts
     this.fetchData();
   }
 }
