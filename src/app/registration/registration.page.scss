@@ -1,116 +1,291 @@
 .registration-page {
-  --background: var(--ion-background-gradient);
+  --ion-background-color: #ffffff;
+  --background: #ffffff;
   font-family: var(--ion-font-family);
+  color: #000000;
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
   
-  ion-content {
-    --background: var(--ion-background-gradient);
-    --padding-top: 0; // Registration page doesn't need header padding
-  }
-
-  // Status bar no longer needed (handled globally)
-  .status-bar {
-    display: none;
-  }
-
-  .registration-container {
-    max-width: 420px;
-    margin: auto;
-    text-align: center;
-    padding: 32px 24px;
-    background: var(--ion-glass-background);
-    border-radius: var(--app-border-radius-2xl);
-    backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 12px 40px rgba(99, 102, 241, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08);
-    margin-top: 40px;
-    position: relative;
-    overflow: hidden;
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
-    }
-    
-    @media (max-width: 768px) {
-      padding: 24px 20px;
-      margin: 20px 16px;
-    }
-    
-    @media (max-width: 480px) {
-      padding: 20px 16px;
-      margin: 16px 12px;
-    }
-  }
-
-  .illustration img {
+  .auth-container {
     width: 100%;
-    max-width: 250px;
-    margin: 20px auto 10px;
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 40px 24px;
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
   }
 
-  .main-title {
-    font-size: 24px;
-    font-weight: 600;
-    margin-bottom: 4px;
-    color: #1a1a1a;
-  }
-
-  .subtitle {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 20px;
-  }
-
-  .input-field {
-    background: #f1f3f6;
-    border-radius: 12px;
-    margin-bottom: 15px;
-    padding-inline: 10px;
-  }
-
-  ion-input {
-    padding: 10px 0;
-  }
-
-  .password-toggle {
-    cursor: pointer;
-    font-size: 20px;
-    color: #666;
-  }
-
-  .toggle-item {
-    margin-bottom: 20px;
-    justify-content: space-between;
-  }
-
-  .submit-btn {
-    background: #0b3d91;
-    border-radius: 30px;
-    font-weight: 600;
-    margin-bottom: 15px;
-  }
-
-  .signin-link {
-    font-size: 14px;
-
-    a {
-      color: #0b3d91;
-      font-weight: 600;
-      margin-left: 4px;
-      text-decoration: none;
+  .logo-container {
+    text-align: center;
+    margin-bottom: 32px;
+    
+    .logo {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 12px;
+      display: block;
     }
+    
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #000000;
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+  }
+
+  .form-container {
+    h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #000000;
+      margin: 0 0 8px 0;
+      text-align: center;
+    }
+    
+    .subtitle {
+      font-size: 15px;
+      color: #666666;
+      margin: 0 0 24px 0;
+      text-align: center;
+      line-height: 1.5;
+    }
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+    text-align: left;
+    
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: #333333;
+    }
+    
+    .input-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: #f5f5f5;
+      border-radius: 12px;
+      padding: 0 16px;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+      
+      &:focus-within {
+        border-color: #000000;
+        background: #ffffff;
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+      }
+    }
+    
+    .input-icon {
+      color: #666666;
+      font-size: 20px;
+      margin-right: 12px;
+      flex-shrink: 0;
+      
+      &.right {
+        margin-right: 0;
+        margin-left: 8px;
+        cursor: pointer;
+        color: #000000;
+        
+        &:hover {
+          opacity: 0.8;
+        }
+      }
+    }
+    
+    .form-input {
+      --padding-start: 0;
+      --padding-end: 0;
+      --padding-top: 16px;
+      --padding-bottom: 16px;
+      font-size: 15px;
+      color: #000000;
+      width: 100%;
+      background: transparent;
+      
+      &::placeholder {
+        color: #999999;
+        opacity: 1;
+      }
+    }
+  }
+  
+  .terms-container {
+    display: flex;
+    align-items: flex-start;
+    margin: 24px 0;
+    font-size: 14px;
+    color: #666666;
+    line-height: 1.5;
+    
+    ion-checkbox {
+      --size: 18px;
+      --border-radius: 4px;
+      --background-checked: #000000;
+      --border-color: #cccccc;
+      --border-color-checked: #000000;
+      margin-right: 12px;
+      margin-top: 2px;
+    }
+    
+    .link {
+      color: #000000;
+      font-weight: 500;
+      text-decoration: none;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+  
+  .submit-btn {
+    --background: #000000;
+    --background-activated: #333333;
+    --background-focused: #333333;
+    --background-hover: #333333;
+    --border-radius: 12px;
+    --padding-top: 16px;
+    --padding-bottom: 16px;
+    --box-shadow: none;
+    font-weight: 600;
+    font-size: 16px;
+    text-transform: none;
+    letter-spacing: 0;
+    height: 56px;
+    margin: 8px 0 24px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    
+    &:active {
+      transform: translateY(1px);
+    }
+    
+    ion-spinner {
+      --color: #ffffff;
+    }
+  }
+  
+  .divider {
+    display: flex;
+    align-items: center;
+    margin: 24px 0;
+    color: #999999;
+    font-size: 14px;
+    
+    &::before,
+    &::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #eeeeee;
+    }
+    
+    span {
+      padding: 0 16px;
+    }
+  }
+  
+  .social-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    
+    .social-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #eeeeee;
+      background: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 0;
+      
+      &:active {
+        transform: translateY(1px);
+      }
+      
+      ion-icon {
+        font-size: 24px;
+      }
+      
+      &.google {
+        color: #DB4437;
+        
+        &:hover {
+          background: #fce8e6;
+          border-color: #f4b5af;
+        }
+      }
+      
+      &.facebook {
+        color: #4267B2;
+        
+        &:hover {
+          background: #e8f0fe;
+          border-color: #a8c6ff;
+        }
+      }
+      
+      &.apple {
+        color: #000000;
+        
+        &:hover {
+          background: #f5f5f5;
+          border-color: #e0e0e0;
+        }
+      }
+    }
+  }
+  
+  .login-link {
+    text-align: center;
+    font-size: 15px;
+    color: #666666;
+    margin-top: 24px;
+    line-height: 1.5;
+    
+    .link {
+      color: #000000;
+      font-weight: 600;
+      text-decoration: none;
+      margin-left: 4px;
+      transition: color 0.2s ease;
+      
+      &:hover {
+        color: #333333;
+        text-decoration: underline;
+      }
+    }
+  }
+  
+  .error-message {
+    color: #e53935;
+    font-size: 14px;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: #ffebee;
+    border-radius: 8px;
+    text-align: left;
+    animation: fadeIn 0.3s ease;
   }
 }
 
-.responsive-img {
-  width: 100%;
-  max-width: 300px;  // You can adjust this as needed
-  height: auto;
-  display: block;
-  margin: 0 auto;     // Center the image
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

@@ -1,0 +1,31 @@
+<div class="language-filter">
+  <div class="filter-header">
+    <h3>Filter by Language</h3>
+    <button 
+      *ngIf="selectedLanguages.length > 0" 
+      (click)="onClearAll()" 
+      class="clear-all"
+      type="button"
+    >
+      Clear All
+    </button>
+  </div>
+  
+  <div class="language-options">
+    <button
+      *ngFor="let language of availableLanguages"
+      (click)="onLanguageToggle(language)"
+      [class.selected]="selectedLanguages.includes(language)"
+      class="language-option"
+      type="button"
+    >
+      <span class="flag">{{ getLanguageFlag(language) }}</span>
+      <span class="name">{{ language }}</span>
+      <ion-icon 
+        *ngIf="selectedLanguages.includes(language)" 
+        name="checkmark" 
+        class="checkmark"
+      ></ion-icon>
+    </button>
+  </div>
+</div>

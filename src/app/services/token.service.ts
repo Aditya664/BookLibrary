@@ -14,7 +14,7 @@ export class TokenService {
   }
 
   static getRole(): string | null {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('auth_token');
     if (!token) return null;
 
     try {
@@ -27,7 +27,7 @@ export class TokenService {
   }
 
   static getFullName(): string | null {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('auth_token');
     if (!token) return null;
 
     try {
@@ -49,7 +49,7 @@ export class TokenService {
   }
 
   static getUserId(): string | null {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('auth_token');
     if (!token) return null;
 
     try {

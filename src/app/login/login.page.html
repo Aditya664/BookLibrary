@@ -1,21 +1,30 @@
-<ion-content class="ion-padding login-page" [fullscreen]="true">
-  <!-- Status Bar -->
-  <div class="status-bar"></div>
-  
+<ion-content class="login-page" [fullscreen]="true">
   <div class="login-container">
-    <!-- Online illustration -->
+    <!-- App Logo -->
+    <div class="logo-container">
+      <ion-img src="assets/icon/favicon.png" class="app-logo"></ion-img>
+      <h1 class="app-name">BookLibrary</h1>
+    </div>
+    
+    <!-- Illustration -->
     <div class="illustration">
-      <img src="assets/signin.png" alt="Sign In Image" class="responsive-img" />
+      <img src="assets/signin.png" alt="Sign In" class="responsive-img" />
     </div>
 
-    <h2 class="main-title">Login</h2>
-    <p class="subtitle">Please enter your credentials to continue.</p>
+    <h2 class="main-title">Welcome Back</h2>
+    <p class="subtitle">Sign in to continue to your account</p>
 
-    <form [formGroup]="loginForm">
+    <form [formGroup]="loginForm" (ngSubmit)="login()" class="auth-form">
       <!-- Username -->
       <ion-item class="input-field" lines="none">
         <ion-icon name="person-outline" slot="start"></ion-icon>
-        <ion-input placeholder="Username" formControlName="username"></ion-input>
+        <ion-input 
+          type="text" 
+          placeholder="Username" 
+          formControlName="username"
+          autocomplete="username"
+          required>
+        </ion-input>
       </ion-item>
 
       <!-- Password -->
@@ -24,7 +33,9 @@
         <ion-input
           [type]="showPassword ? 'text' : 'password'"
           placeholder="Password"
-          formControlName="password">
+          formControlName="password"
+          autocomplete="current-password"
+          required>
         </ion-input>
         <ion-icon
           [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
@@ -36,17 +47,47 @@
 
       <!-- Error message -->
       <div *ngIf="errorMessage" class="error-message">
-        <ion-text color="danger">{{ errorMessage }}</ion-text>
+        <ion-icon name="warning-outline"></ion-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <!-- Forgot Password -->
+      <div class="forgot-password">
+        <a href="#" (click)="$event.preventDefault(); forgotPassword()">Forgot password?</a>
       </div>
 
       <!-- Login button -->
-      <ion-button expand="block" type="submit" class="submit-btn" (click)="login()" [disabled]="loginForm.invalid">
-        Login
+      <ion-button 
+        expand="block" 
+        type="submit" 
+        class="submit-btn" 
+        [disabled]="loginForm.invalid || isLoading">
+        <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+        <span *ngIf="!isLoading">Sign In</span>
       </ion-button>
+
+      <!-- Divider -->
+      <div class="divider">
+        <span>or</span>
+      </div>
+
+      <!-- Social Login -->
+      <div class="social-login">
+        <ion-button fill="clear" class="social-btn google">
+          <ion-icon slot="icon-only" name="logo-google"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" class="social-btn facebook">
+          <ion-icon slot="icon-only" name="logo-facebook"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" class="social-btn apple">
+          <ion-icon slot="icon-only" name="logo-apple"></ion-icon>
+        </ion-button>
+      </div>
 
       <!-- Sign Up link -->
       <div class="signup-link">
-        Don't have an account? <a routerLink="/registration">Create one</a>
+        Don't have an account? 
+        <a routerLink="/registration" class="signup-link-text">Sign up</a>
       </div>
     </form>
   </div>

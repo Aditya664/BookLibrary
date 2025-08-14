@@ -14,7 +14,9 @@ import { ApiResponse } from '../Model/ApiResponse';
 export class RegistrationPage {
   registrationForm: FormGroup;
   showPassword = false;
-  reminderMe = false;
+  termsAccepted = false;
+  isLoading = false;
+  errorMessage = '';
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
@@ -34,45 +36,43 @@ export class RegistrationPage {
     this.showPassword = !this.showPassword;
   }
 
-  register() {
-    if (!this.registrationForm.valid) return;
+  async register() {
+    if (!this.registrationForm.valid || !this.termsAccepted) return;
 
-    this.presentLoading('Registering...');
-    this.authService.register(this.registrationForm.value).subscribe({
-      next: (response:ApiResponse<null>) => {
-        this.dismissLoading();
-        if (response.success) {
-          this.presentToast('Registration successful! Please login.', 'success');
-          this.router.navigate(['/login']);
-        } else {
-          this.presentToast('Unexpected response: ' + response, 'warning');
-        }
-      },
-      error: (error) => {
-        this.dismissLoading();
-        this.presentToast('Registration failed: ' + (error.error?.message || error.message), 'danger');
-        console.error('Registration error:', error);
+    this.isLoading = true;
+    this.errorMessage = '';
+    
+    try {
+      const response = await this.authService.register(this.registrationForm.value).toPromise();
+      this.isLoading = false;
+      
+      if (response?.success) {
+        this.presentToast('Registration successful! Please login.', 'success');
+        this.router.navigate(['/login']);
+      } else {
+        this.errorMessage = response?.message || 'Registration failed. Please try again.';
       }
-    });
-  }
-
-  private loading: HTMLIonLoadingElement | null = null;
-
-  private presentLoading(message: string) {
-    this.loadingCtrl.create({
-      message,
-      spinner: 'crescent'
-    }).then(loader => {
-      this.loading = loader;
-      loader.present();
-    });
-  }
-
-  private dismissLoading() {
-    if (this.loading) {
-      this.loading.dismiss();
-      this.loading = null;
+    } catch (error: any) {
+      this.isLoading = false;
+      this.errorMessage = error.error?.message || error.message || 'An error occurred during registration.';
+      console.error('Registration error:', error);
     }
+  }
+
+  // Social login methods
+  async loginWithGoogle() {
+    this.errorMessage = 'Google login is not yet implemented.';
+    this.presentToast(this.errorMessage, 'warning');
+  }
+
+  async loginWithFacebook() {
+    this.errorMessage = 'Facebook login is not yet implemented.';
+    this.presentToast(this.errorMessage, 'warning');
+  }
+
+  async loginWithApple() {
+    this.errorMessage = 'Apple login is not yet implemented.';
+    this.presentToast(this.errorMessage, 'warning');
   }
 
   private presentToast(message: string, color: 'success' | 'warning' | 'danger') {

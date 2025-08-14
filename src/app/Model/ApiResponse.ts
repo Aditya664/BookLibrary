@@ -22,6 +22,7 @@ export interface ApiResponse<T> {
     author: string;
     rating: number;
     description: string;
+    language?: string;
     genres: GenreResponse[];
     reviews: ReviewResponse[];
     pdfFile?: Uint8Array | string; // Can be either Uint8Array or base64 string from API
