@@ -58,8 +58,19 @@
     </div>
   </div>
 
-  <!-- Bottom Toolbar -->
-  <div class="reader-controls" [class.hidden]="!showControls || isFullscreen">
+  <!-- Bottom Tray -->
+  <div class="tray-container" [class.collapsed]="trayCollapsed" [class.hidden]="!showControls || isFullscreen">
+    <!-- Tray Handle -->
+    <div class="tray-handle" (click)="toggleTray()">
+      <div class="tray-handle-icon">
+        <ion-icon [name]="trayCollapsed ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+      </div>
+    </div>
+    
+    <!-- Tray Content -->
+    <div class="tray-content">
+      <!-- Bottom Toolbar -->
+      <div class="reader-controls">
     <!-- Left Controls -->
     <div class="control-group">
       <!-- Bookmark Button -->
@@ -246,10 +257,10 @@
         <p *ngIf="book.pdfFileName">File: {{ book.pdfFileName }}</p>
         <p>Pages: {{ totalPages }}</p>
         <p *ngIf="bookmarks.length > 0">Bookmarks: {{ bookmarks.length }}</p>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Overlay for settings -->
   <div class="settings-overlay" [class.open]="showSettings" (click)="toggleSettings()"></div>
-</ion-content>

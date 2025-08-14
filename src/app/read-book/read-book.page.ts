@@ -38,6 +38,9 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
   headerScrolled = false;
   isFullscreen = false;
   nightMode = false;
+  trayCollapsed = false;
+  private lastScrollPosition = 0;
+  private scrollThreshold = 50; // pixels to scroll before hiding/showing controls
 
   // Settings
   brightness = 100;
@@ -307,6 +310,28 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
   // ---------------------------
   // Load book & PDF content
   // ---------------------------
+  // Toggle tray collapse state
+  toggleTray() {
+    this.trayCollapsed = !this.trayCollapsed;
+  }
+
+  // Handle scroll events for auto-hiding controls
+  onScroll(event: any) {
+    if (this.isFullscreen) return;
+    
+    const currentScroll = event.detail.scrollTop;
+    const scrollDiff = currentScroll - this.lastScrollPosition;
+    
+    // Only show/hide if scrolled more than threshold
+    if (Math.abs(scrollDiff) > this.scrollThreshold) {
+      this.showControls = scrollDiff < 0 || currentScroll < 50;
+      this.lastScrollPosition = currentScroll;
+    }
+    
+    // Update header state
+    this.headerScrolled = currentScroll > 10;
+  }
+
   async loadBook() {
     if (!this.bookId) return;
     const loading = await this.loadingCtrl.create({ 
@@ -314,6 +339,9 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
       spinner: 'crescent'
     });
     await loading.present();
+    
+    // Reset tray state when loading new book
+    this.trayCollapsed = false;
 
     try {
       // First ensure view is initialized
@@ -366,6 +394,17 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
       throw new Error('No PDF content');
     }
     this.isLoading = true;
+    
+    // Reset PDF doc if it exists
+    if (this.pdfDoc) {
+      try {
+        await this.pdfDoc.cleanup();
+        await this.pdfDoc.destroy();
+      } catch (e) {
+        console.warn('Error cleaning up previous PDF', e);
+      }
+      this.pdfDoc = null;
+    }
 
     try {
       // Prepare pdf data (base64 or ArrayBuffer/Uint8Array)
@@ -412,8 +451,11 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
       this.totalPages = this.pdfDoc.numPages || 0;
       console.log('PDF loaded pages:', this.totalPages);
 
-      // Don't reset currentPage here - let loadReadingProgress handle it
-      // This prevents the page from resetting to 1 when loading progress
+      // For single-page PDFs, ensure we render the page
+      if (this.totalPages === 1) {
+        this.currentPage = 1;
+        await this.renderPage(1);
+      }
       
       // Setup progress tracking
       if (!this.progressCleanup) {
@@ -1090,10 +1132,10 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
   // ---------------------------
   // Utilities & events
   // ---------------------------
-  private onScroll(event: any) {
-    const scrollTop = event?.detail?.scrollTop ?? (window.pageYOffset || document.documentElement.scrollTop || 0);
-    this.headerScrolled = scrollTop > 50;
-  }
+  // private onScroll(event: any) {
+  //   const scrollTop = event?.detail?.scrollTop ?? (window.pageYOffset || document.documentElement.scrollTop || 0);
+  //   this.headerScrolled = scrollTop > 50;
+  // }
 
   private onWindowResize() {
     if (this.pdfDoc && this.pageIsRendered) {
