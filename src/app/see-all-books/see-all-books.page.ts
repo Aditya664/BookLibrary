@@ -1,10 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, input, OnInit } from '@angular/core';
 import { BookResponse, GenreResponseWithBooks } from '../Model/ApiResponse';
 import { forkJoin } from 'rxjs';
 import { BookService } from '../services/book.service';
 import { NavController, Platform } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
-import { App } from '@capacitor/app';
 
 @Component({
   selector: 'app-see-all-books',
@@ -14,13 +13,14 @@ import { App } from '@capacitor/app';
 })
 export class SeeAllBooksPage implements OnInit {
   isLoading = false;
-
+  genre: string = '';
+  langauge: string = '';
   searchQuery = '';
   allBooks: BookResponse[] = [];
   filteredBooks: BookResponse[] = [];
   genres: GenreResponseWithBooks[] = [];
   selectedGenre = 'All';
-  
+
   // New properties for enhanced UI
   viewMode: 'grid' | 'list' = 'grid';
   showFilters = false;
@@ -64,7 +64,7 @@ export class SeeAllBooksPage implements OnInit {
       'gradient-3', // Orange to Red
       'gradient-4', // Pink to Purple
       'gradient-5', // Teal to Blue
-      'gradient-6'  // Yellow to Orange
+      'gradient-6', // Yellow to Orange
     ];
 
     // Create a consistent hash from the title
@@ -72,7 +72,7 @@ export class SeeAllBooksPage implements OnInit {
       (acc, char) => acc + char.charCodeAt(0),
       0
     );
-    
+
     return gradients[hash % gradients.length];
   }
 
@@ -80,26 +80,24 @@ export class SeeAllBooksPage implements OnInit {
     const fullStars = Math.floor(rating);
     const halfStar = rating % 1 >= 0.5;
     const totalStars = 5;
-  
+
     const starsArray: string[] = [];
-  
+
     for (let i = 0; i < fullStars; i++) {
       starsArray.push('star'); // full star
     }
-  
+
     if (halfStar) {
       starsArray.push('star-half'); // half star
     }
-  
+
     while (starsArray.length < totalStars) {
       starsArray.push('star-outline'); // empty star
     }
-  
+
     return starsArray;
   }
-  
 
-  
   // Clear search query and reset filtered books
   clearSearch() {
     this.searchQuery = '';
@@ -130,7 +128,7 @@ export class SeeAllBooksPage implements OnInit {
     private platform: Platform,
     private router: Router,
     private route: ActivatedRoute
-  ) { 
+  ) {
     // Handle hardware back button
     this.platform.backButton.subscribeWithPriority(10, () => {
       this.goBack();
@@ -149,16 +147,34 @@ export class SeeAllBooksPage implements OnInit {
       genres: this.bookService.getAllGenres(),
     }).subscribe({
       next: ({ allBooks, genres }) => {
-        this.allBooks = allBooks.data;
+        let books = allBooks.data;
+        // Set genres with "All" option
         this.genres = [
           {
             id: -1,
             name: 'All',
             iconName: 'all',
-            books: {id:1,bookName:"null"},
+            books: {bookName:'',id:-1},
           },
           ...genres.data,
         ];
+        // Apply Genre Filter if exists
+        if (this.genre && this.genre !== 'All') {
+          books = books.filter((b) =>
+            b.genres?.some(
+              (g) => g.name?.toLowerCase() === this.genre?.toLowerCase()
+            )
+          );
+        }
+
+        // Apply Language Filter if exists
+        if (this.langauge) {
+          books = books.filter(
+            (b) => b.language?.toString()?.toLowerCase() === this.langauge.toString()?.toLowerCase()
+          );
+        }
+
+        this.allBooks = books;
 
         this.isLoading = false;
       },
@@ -209,18 +225,19 @@ export class SeeAllBooksPage implements OnInit {
 
     // Apply search query
     if (this.searchQuery.trim()) {
-      filtered = filtered.filter(book =>
-        book.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        book.author.toLowerCase().includes(this.searchQuery.toLowerCase())
+      filtered = filtered.filter(
+        (book) =>
+          book.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          book.author.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     }
 
     // Apply genre filters
     if (this.selectedGenres.length > 0) {
-      filtered = filtered.filter(book =>
-        book.genres && book.genres.some(genre => 
-          this.selectedGenres.includes(genre.name)
-        )
+      filtered = filtered.filter(
+        (book) =>
+          book.genres &&
+          book.genres.some((genre) => this.selectedGenres.includes(genre.name))
       );
     }
 
@@ -236,7 +253,10 @@ export class SeeAllBooksPage implements OnInit {
         filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
         break;
       case 'recent':
-        filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        filtered.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
         break;
     }
 
@@ -267,7 +287,7 @@ export class SeeAllBooksPage implements OnInit {
       navigator.share({
         title: book.title,
         text: `Check out "${book.title}" by ${book.author}`,
-        url: window.location.href
+        url: window.location.href,
       });
     } else {
       // Fallback: copy to clipboard
@@ -286,6 +306,12 @@ export class SeeAllBooksPage implements OnInit {
   }
 
   ngOnInit(): void {
+    this.route.queryParamMap.subscribe((params) => {
+      this.genre = params.get('genre') || '';
+      this.langauge = params.get('language') || '';
+      console.log(this.genre);
+      console.log(this.langauge);
+    });
     this.fetchData();
   }
 }

@@ -133,6 +133,51 @@
     </div>
   </div>
 
+<!-- Top 10 Books by Language Section -->
+<div class="top-books-by-language" *ngIf="topBooksByLanguage.length > 0">
+  <div *ngFor="let group of topBooksByLanguage">
+    <div class="section-header">
+      <div class="section-title">Top 10 {{ group.language }} Books</div>
+      <button class="see-all-btn" (click)="seeAllBooks(group.language)">
+        <span>See all</span>
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+      </button>
+    </div>
+
+    <div class="books-horizontal-scroll">
+      <div
+        class="book-card"
+        *ngFor="let book of group.books"
+        (click)="navigateToBook(book.id.toString())"
+      >
+        <div class="book-cover">
+          <ng-container *ngIf="book.image; else placeholderBook">
+            <img [src]="book.image" [alt]="book.title" loading="lazy" />
+          </ng-container>
+          <ng-template #placeholderBook>
+            <div class="placeholder-book" [ngClass]="getGradientForBook(book.title)">
+              <div class="book-content">
+                <div class="book-initials">{{ getInitials(book.title) }}</div>
+              </div>
+            </div>
+          </ng-template>
+
+          <div class="rating-badge" *ngIf="book.rating">
+            <ion-icon name="star"></ion-icon>
+            <span>{{ book.rating }}</span>
+          </div>
+        </div>
+        <div class="book-info">
+          <h4 class="book-title">{{ book.title }}</h4>
+          <p class="book-author">{{ book.author }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
   <!-- Continue Reading Section -->
   <div class="main-content-section" *ngIf="continueReading">
     <div class="section-title">Continue Reading</div>

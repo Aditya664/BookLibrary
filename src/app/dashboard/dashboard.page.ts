@@ -174,10 +174,12 @@ export class DashboardPage implements OnInit {
     return iconMap[genreName] || 'book-outline';
   }
 
-  navigateToGenre(genreName: string) {
-    this.router.navigate(['/see-all-books'], {
-      queryParams: { genre: genreName }
-    });
+  navigateToGenre(genreName: string, language?: string) {
+    const queryParams: any = { genre: genreName };
+    if (language) {
+      queryParams.language = language;
+    }
+    this.router.navigate(['/see-all-books'], { queryParams });
   }
 
   navigateToBook(bookId?: string) {
@@ -189,8 +191,12 @@ export class DashboardPage implements OnInit {
     this.nav.navigateForward(['/read-book', bookId]);
   }
 
-  seeAllBooks() {
-    this.router.navigate(['/see-all-books']);
+  seeAllBooks(language?: string) {
+    const queryParams: any = {};
+    if (language) {
+      queryParams.language = language;
+    }
+    this.router.navigate(['/see-all-books'], { queryParams });
   }
 
   openReadingSchedule() {
@@ -359,6 +365,7 @@ export class DashboardPage implements OnInit {
         this.allBooks = responses.allBooks.data || [];
         this.continueReading = responses.continueReading?.data || null;
         this.isLoading = false;
+        this.generateTopBooksByLanguage();
       },
       error: (error) => {
         console.error('Error in fetchData:', error);
@@ -371,4 +378,25 @@ export class DashboardPage implements OnInit {
     this.userId = TokenService.getUserId();
     this.fetchData();
   }
+
+  topBooksByLanguage: { language: string; books: BookResponse[] }[] = [];
+
+  generateTopBooksByLanguage() {
+    const grouped: { [key: string]: any[] } = {};
+    // Group books by language
+    this.allBooks.forEach(book => {
+      if (!grouped[book?.language ?? '']) grouped[book?.language ?? ''] = [];
+      grouped[book?.language ?? ''].push(book);
+    });
+  
+    // Sort each group by rating and take top 10
+    this.topBooksByLanguage = Object.keys(grouped).map(lang => ({
+      language: lang,
+      books: grouped[lang]
+        .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+        .slice(0, 10)
+    }));
+  }
+
 }
+
