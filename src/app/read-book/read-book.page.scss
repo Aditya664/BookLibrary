@@ -449,3 +449,78 @@
     visibility: visible;
   }
 }
+
+.subscription-modal {
+  --background: #0f172a; /* dark theme */
+  color: white;
+  text-align: center;
+  padding: 16px;
+}
+
+.header-images ion-img {
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: bold;
+  margin: 8px 0;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #94a3b8;
+  margin-bottom: 20px;
+}
+
+.plan-card {
+  margin: 12px 0;
+  padding: 14px;
+  border-radius: 16px;
+  background: #1e293b;
+  color: white;
+  text-align: left;
+  position: relative;
+}
+
+.plan-card h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.plan-card p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.plan-card.premium {
+  border: 2px solid #38bdf8;
+}
+
+ion-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 12px;
+}
+
+.continue-btn {
+  margin-top: 20px;
+  --background: linear-gradient(45deg, #0ea5e9, #0d9488);
+  --border-radius: 12px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.footer-links {
+  margin-top: 20px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.footer-links a {
+  color: #38bdf8;
+  text-decoration: none;
+}

@@ -4,16 +4,24 @@ import {
   AfterViewInit,
   OnDestroy,
   ViewChild,
-  ElementRef
+  ElementRef,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NavController, Platform, LoadingController, ToastController } from '@ionic/angular';
+import {
+  NavController,
+  Platform,
+  LoadingController,
+  ToastController,
+  AlertController,
+  ModalController,
+} from '@ionic/angular';
 import { BookService } from '../services/book.service';
 import { TokenService } from '../services/token.service';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { ReadingProgressRequestDto } from '../Model/ApiResponse';
 import { Subscription, Subject } from 'rxjs';
+import { SubscriptionModalComponent } from './subscription-modal.component';
 // NOTE: using window.pdfjsLib dynamic loader approach to avoid bundling issues.
 // Make sure pdfjs-dist is available via npm or CDN in your environment.
 
@@ -21,11 +29,13 @@ import { Subscription, Subject } from 'rxjs';
   selector: 'app-read-book',
   templateUrl: './read-book.page.html',
   styleUrls: ['./read-book.page.scss'],
-  standalone:false
+  standalone: false,
 })
 export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('pdfCanvas', { static: false }) pdfCanvas!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('pdfContainer', { static: false }) pdfContainer!: ElementRef<HTMLDivElement>;
+  @ViewChild('pdfCanvas', { static: false })
+  pdfCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('pdfContainer', { static: false })
+  pdfContainer!: ElementRef<HTMLDivElement>;
 
   book: any = null;
   bookId: string | null = null;
@@ -65,6 +75,7 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
   pageRendering = false;
   pageIsRendered = false;
   pageNumPending: number | null = null;
+  sessionStart!: number;
 
   // Search & bookmarks
   bookmarks: number[] = [];
@@ -83,7 +94,7 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
   private boundOnResize: any = null;
   private boundFullscreenHandler: any = null;
   private platformPauseSub: Subscription | null = null;
-
+  private subscriptionExpired = false;
   // store cleanup functions
   private pdfjsLoaded = false;
   private workerVersion = '5.4.54'; // change if you change CDN version
@@ -96,31 +107,63 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
     private platform: Platform,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
-    private tokenService: TokenService
+    private alertCtrl: AlertController,
+    private modalCtrl: ModalController
   ) {
     this.checkPlatform();
   }
 
-  // ---------------------------
-  // Lifecycle
-  // ---------------------------
-  async ngOnInit() {
-    // Set up platform ready
+  async startReading(): Promise<void> {
     await this.platform.ready();
-    // Get the book ID from the route
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       if (id) {
         this.bookId = id;
         this.loadBook();
       }
     });
-    
+  }
+
+  // ngOnDestroy(): void {
+  //   // End session on closing
+  //   this.readingService.endSession(this.bookId).subscribe();
+  // }
+  // ---------------------------
+  // Lifecycle
+  // ---------------------------
+  async ngOnInit() {
+    this.sessionStart = Date.now();
+    this.route.paramMap.subscribe((params) => {
+      const id = params.get('id');
+      if (id) {
+        this.bookId = id;
+        this.bookService
+          .checkUsage(TokenService.getUserId() ?? '')
+          .subscribe((res: any) => {
+            if (!res.hasTimeLeft) {
+              console.log('limit exceeded');
+              setTimeout(async () => {
+                this.openSubscriptionModal();
+
+              }, 10);
+            } else {
+              this.bookService
+                .startSession(
+                  TokenService.getUserId() ?? '',
+                  this.bookId?.toString() ?? ''
+                )
+                .subscribe(() => {
+                  this.loadBook();
+                });
+            }
+          });
+      }
+    });
   }
 
   ngAfterViewInit() {
     // load pdf.js once the view is ready
-    this.loadPdfJs().catch(err => {
+    this.loadPdfJs().catch((err) => {
       console.error('Failed to load pdfjs:', err);
       this.showToast('PDF viewer failed to initialize');
     });
@@ -158,10 +201,22 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
       window.removeEventListener('scroll', this.boundOnScroll);
       window.removeEventListener('resize', this.boundOnResize);
     }
-    document.removeEventListener('fullscreenchange', this.boundFullscreenHandler);
-    document.removeEventListener('webkitfullscreenchange', this.boundFullscreenHandler);
-    document.removeEventListener('mozfullscreenchange', this.boundFullscreenHandler);
-    document.removeEventListener('MSFullscreenChange', this.boundFullscreenHandler);
+    document.removeEventListener(
+      'fullscreenchange',
+      this.boundFullscreenHandler
+    );
+    document.removeEventListener(
+      'webkitfullscreenchange',
+      this.boundFullscreenHandler
+    );
+    document.removeEventListener(
+      'mozfullscreenchange',
+      this.boundFullscreenHandler
+    );
+    document.removeEventListener(
+      'MSFullscreenChange',
+      this.boundFullscreenHandler
+    );
 
     // unsubscribe platform pause
     if (this.platformPauseSub) {
@@ -170,7 +225,10 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
     }
 
     // exit fullscreen
-    if (document.fullscreenElement || (document as any).webkitFullscreenElement) {
+    if (
+      document.fullscreenElement ||
+      (document as any).webkitFullscreenElement
+    ) {
       try {
         await this.toggleFullscreen();
       } catch (e) {
@@ -202,7 +260,14 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
     } catch (e) {
       console.error('Error clearing canvas', e);
     }
-
+    const sessionMinutes = Math.floor((Date.now() - this.sessionStart) / 60000);
+    this.bookService
+      .endSession(
+        TokenService.getUserId() ?? '',
+        this.bookId ?? '',
+        sessionMinutes.toString()
+      )
+      .subscribe();
     console.log('Cleanup complete');
   }
 
@@ -243,7 +308,9 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
     try {
       this.platformPauseSub = this.platform.pause.subscribe(() => {
         if (this.currentPage !== this.lastSavedPage) {
-          this.saveReadingProgress().catch(err => console.error('Error saving on pause', err));
+          this.saveReadingProgress().catch((err) =>
+            console.error('Error saving on pause', err)
+          );
         }
       });
     } catch (e) {
@@ -264,7 +331,7 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
       // Use the ES modules version
       const script = document.createElement('script');
       script.type = 'module';
-      
+
       // Inline script to handle the module import
       script.textContent = `
         import * as pdfjsLib from '../../assets/pdf.min.mjs';
@@ -278,12 +345,15 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
         // Dispatch event when loaded
         window.dispatchEvent(new CustomEvent('pdfjsLoaded'));
       `;
-      
+
       // Handle load event
       const onLoad = () => {
         // Add a small delay to ensure the module is fully initialized
         setTimeout(() => {
-          if ((window as any)['pdfjsLib'] && (window as any)['pdfjsLib'].getDocument) {
+          if (
+            (window as any)['pdfjsLib'] &&
+            (window as any)['pdfjsLib'].getDocument
+          ) {
             this.pdfjsLoaded = true;
             console.log('PDF.js loaded successfully');
             resolve();
@@ -292,16 +362,16 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
           }
         }, 100);
       };
-      
+
       // Handle errors
       script.onerror = (error) => {
         console.error('Failed to load PDF.js module:', error);
         reject(new Error('Failed to load PDF viewer. Please try again.'));
       };
-      
+
       // Listen for our custom event
       window.addEventListener('pdfjsLoaded', onLoad, { once: true });
-      
+
       // Add to document
       document.head.appendChild(script);
     });
@@ -318,39 +388,41 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
   // Handle scroll events for auto-hiding controls
   onScroll(event: any) {
     if (this.isFullscreen) return;
-    
+
     const currentScroll = event.detail.scrollTop;
     const scrollDiff = currentScroll - this.lastScrollPosition;
-    
+
     // Only show/hide if scrolled more than threshold
     if (Math.abs(scrollDiff) > this.scrollThreshold) {
       this.showControls = scrollDiff < 0 || currentScroll < 50;
       this.lastScrollPosition = currentScroll;
     }
-    
+
     // Update header state
     this.headerScrolled = currentScroll > 10;
   }
 
   async loadBook() {
     if (!this.bookId) return;
-    const loading = await this.loadingCtrl.create({ 
+    const loading = await this.loadingCtrl.create({
       message: 'Loading book...',
-      spinner: 'crescent'
+      spinner: 'crescent',
     });
     await loading.present();
-    
+
     // Reset tray state when loading new book
     this.trayCollapsed = false;
 
     try {
       // First ensure view is initialized
       if (!this.pdfCanvas) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
       // Load book details
-      const response: any = await this.bookService.getBookById(this.bookId).toPromise();
+      const response: any = await this.bookService
+        .getBookById(this.bookId)
+        .toPromise();
       if (!response?.success || !response.data) {
         throw new Error('Failed to load book details');
       }
@@ -370,7 +442,7 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
       // Ensure view is ready
       if (!this.pdfCanvas?.nativeElement) {
         console.warn('PDF canvas not ready, retrying...');
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, 300));
       }
 
       // Load PDF content first
@@ -394,7 +466,7 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
       throw new Error('No PDF content');
     }
     this.isLoading = true;
-    
+
     // Reset PDF doc if it exists
     if (this.pdfDoc) {
       try {
@@ -437,7 +509,7 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
         cMapPacked: true,
         disableAutoFetch: false,
         disableRange: false,
-        useWorkerFetch: true
+        useWorkerFetch: true,
       });
 
       loadingTask.onProgress = (p: { loaded: number; total?: number }) => {
@@ -456,7 +528,7 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
         this.currentPage = 1;
         await this.renderPage(1);
       }
-      
+
       // Setup progress tracking
       if (!this.progressCleanup) {
         this.progressCleanup = this.setupProgressTracking();
@@ -486,7 +558,7 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
       console.warn('No PDF document loaded');
       return;
     }
-    
+
     // Validate page number
     if (pageNum < 1 || pageNum > this.totalPages) {
       console.warn(`Invalid page number: ${pageNum}`);
@@ -514,7 +586,7 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
       // Get the page
       const page = await this.pdfDoc.getPage(pageNum);
       const canvas = this.pdfCanvas?.nativeElement;
-      
+
       if (!canvas) {
         throw new Error('PDF canvas element not found');
       }
@@ -526,11 +598,16 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
 
       // Calculate viewport
       const container = this.pdfContainer?.nativeElement;
-      const containerWidth = container ? Math.max(200, container.clientWidth - 40) : 800;
-      
+      const containerWidth = container
+        ? Math.max(200, container.clientWidth - 40)
+        : 800;
+
       // Get the viewport at 100% scale to calculate the proper scale
-      const viewport = page.getViewport({ scale: 1.0, rotation: this.rotation });
-      
+      const viewport = page.getViewport({
+        scale: 1.0,
+        rotation: this.rotation,
+      });
+
       // Calculate scale to fit width by default
       let desiredScale = this.scale;
       if (this.scale === 1.0) {
@@ -539,9 +616,9 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
       }
 
       // Get the final viewport with the desired scale and rotation
-      const scaledViewport = page.getViewport({ 
-        scale: desiredScale, 
-        rotation: this.rotation 
+      const scaledViewport = page.getViewport({
+        scale: desiredScale,
+        rotation: this.rotation,
       });
 
       // Handle high DPI displays
@@ -566,7 +643,7 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
 
       // Save context state before transformations
       context.save();
-      
+
       // Apply device pixel ratio
       context.scale(outputScale, outputScale);
 
@@ -575,7 +652,11 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
         context.fillStyle = this.nightMode ? '#ffffff80' : '#00000080';
         context.font = '16px Arial';
         context.textAlign = 'center';
-        context.fillText('Rendering page...', displayWidth / 2, displayHeight / 2);
+        context.fillText(
+          'Rendering page...',
+          displayWidth / 2,
+          displayHeight / 2
+        );
       }
 
       // Render the page
@@ -584,12 +665,12 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
         viewport: scaledViewport,
         intent: 'display',
         enableWebGL: true,
-        renderInteractiveForms: false
+        renderInteractiveForms: false,
       };
 
       // Perform the actual rendering
       await page.render(renderContext).promise;
-      
+
       // Restore context state
       context.restore();
 
@@ -603,7 +684,9 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
       this.currentPageChange.next(this.currentPage);
       this.lastSavedPage = this.lastSavedPage || this.currentPage;
 
-      console.log(`Rendered page ${pageNum} at ${Math.round(desiredScale * 100)}%`);
+      console.log(
+        `Rendered page ${pageNum} at ${Math.round(desiredScale * 100)}%`
+      );
     } catch (err) {
       console.error('Render error', err);
       this.showToast(`Error displaying page ${pageNum}`);
@@ -617,7 +700,9 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
       if (this.pageNumPending && this.pageNumPending !== this.currentPage) {
         const next = this.pageNumPending;
         this.pageNumPending = null;
-        this.renderPage(next).catch(e => console.error('Pending render failed', e));
+        this.renderPage(next).catch((e) =>
+          console.error('Pending render failed', e)
+        );
       }
     }
   }
@@ -625,25 +710,29 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
   async navigateToPage(pageNum: number, showLoader = true): Promise<void> {
     // Validate page number
     if (pageNum < 1 || pageNum > this.totalPages) {
-      console.warn(`Invalid page number: ${pageNum}. Must be between 1 and ${this.totalPages}`);
+      console.warn(
+        `Invalid page number: ${pageNum}. Must be between 1 and ${this.totalPages}`
+      );
       return;
     }
-    
+
     // Don't do anything if we're already on this page
     if (pageNum === this.currentPage && this.pageIsRendered) {
       return;
     }
-    
+
     try {
       // Update current page and render
       this.currentPage = pageNum;
       await this.renderPage(pageNum);
-      
+
       // Update progress bar in UI
       if (this.totalPages > 0) {
-        this.readingProgress = Math.round((this.currentPage / this.totalPages) * 100);
+        this.readingProgress = Math.round(
+          (this.currentPage / this.totalPages) * 100
+        );
       }
-      
+
       // Save progress when navigating to a new page
       // Only save if we have a valid user and book ID
       if (this.userId && this.bookId) {
@@ -672,17 +761,17 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
   async toggleFullscreen() {
     this.isFullscreen = !this.isFullscreen;
     this.showControls = !this.isFullscreen;
-    
+
     if (this.platform.is('cordova')) {
       const { StatusBar } = await import('@capacitor/status-bar');
-      
+
       if (this.isFullscreen) {
         await StatusBar.hide();
       } else {
         await StatusBar.show();
       }
     }
-    
+
     // Force reflow and re-render after a short delay
     setTimeout(() => {
       if (this.pdfContainer?.nativeElement) {
@@ -699,7 +788,8 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   nextPage() {
-    if (this.currentPage < this.totalPages) this.renderPage(this.currentPage + 1);
+    if (this.currentPage < this.totalPages)
+      this.renderPage(this.currentPage + 1);
   }
 
   goToPage(page: any) {
@@ -722,7 +812,10 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
   fitToWidth() {
     if (!this.pdfDoc) return;
     this.pdfDoc.getPage(this.currentPage).then((page: any) => {
-      const containerWidth = Math.max(200, (this.pdfContainer?.nativeElement?.clientWidth || 600) - 40);
+      const containerWidth = Math.max(
+        200,
+        (this.pdfContainer?.nativeElement?.clientWidth || 600) - 40
+      );
       const viewport = page.getViewport({ scale: 1, rotation: this.rotation });
       const widthScale = containerWidth / viewport.width;
       this.scale = Math.max(widthScale, 0.75);
@@ -733,7 +826,10 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
   fitToHeight() {
     if (!this.pdfDoc) return;
     this.pdfDoc.getPage(this.currentPage).then((page: any) => {
-      const containerHeight = Math.max(200, (this.pdfContainer?.nativeElement?.clientHeight || 600) - 120);
+      const containerHeight = Math.max(
+        200,
+        (this.pdfContainer?.nativeElement?.clientHeight || 600) - 120
+      );
       const viewport = page.getViewport({ scale: 1, rotation: this.rotation });
       const heightScale = containerHeight / viewport.height;
       this.scale = Math.max(heightScale, 0.75);
@@ -808,9 +904,15 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
       for (let p = 1; p <= this.totalPages; p++) {
         const page = await this.pdfDoc.getPage(p);
         const textContent = await page.getTextContent();
-        const pageText = textContent.items.map((i: any) => i.str).join(' ').toLowerCase();
+        const pageText = textContent.items
+          .map((i: any) => i.str)
+          .join(' ')
+          .toLowerCase();
         if (pageText.includes(this.searchTerm)) {
-          this.searchResults.push({ page: p, text: pageText.substring(0, 200) + '...' });
+          this.searchResults.push({
+            page: p,
+            text: pageText.substring(0, 200) + '...',
+          });
         }
       }
 
@@ -831,14 +933,17 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
 
   nextSearchResult() {
     if (this.searchResults.length === 0) return;
-    this.currentSearchIndex = (this.currentSearchIndex + 1) % this.searchResults.length;
+    this.currentSearchIndex =
+      (this.currentSearchIndex + 1) % this.searchResults.length;
     const r = this.searchResults[this.currentSearchIndex];
     this.renderPage(r.page);
   }
 
   previousSearchResult() {
     if (this.searchResults.length === 0) return;
-    this.currentSearchIndex = (this.currentSearchIndex - 1 + this.searchResults.length) % this.searchResults.length;
+    this.currentSearchIndex =
+      (this.currentSearchIndex - 1 + this.searchResults.length) %
+      this.searchResults.length;
     const r = this.searchResults[this.currentSearchIndex];
     this.renderPage(r.page);
   }
@@ -878,7 +983,7 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
     }
 
     let loading: HTMLIonLoadingElement | null = null;
-    
+
     try {
       // Only show loading if we don't have a current page yet or we're on the first page
       if (this.currentPage <= 1) {
@@ -888,42 +993,50 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
           duration: 2000,
           showBackdrop: false,
           cssClass: 'progress-loading',
-          translucent: true
+          translucent: true,
         });
         await loading.present();
       }
 
-      const response = await this.bookService.getReadingProgress(
-        this.userId,
-        +this.bookId
-      ).toPromise();
-      
+      const response = await this.bookService
+        .getReadingProgress(this.userId, +this.bookId)
+        .toPromise();
+
       if (response?.success && response.data) {
         const progress = response.data;
         const savedPage = progress.currentPage || 1;
-        
+
         // Only update if we have a valid saved page
         if (savedPage > 0) {
-          console.log(`Loaded progress: page ${savedPage}/${this.totalPages} (${progress.percentage || 0}%)`);
-          
+          console.log(
+            `Loaded progress: page ${savedPage}/${this.totalPages} (${
+              progress.percentage || 0
+            }%)`
+          );
+
           // Update progress and last read page
           this.readingProgress = progress.percentage || 0;
           this.lastReadPage = savedPage;
-          
+
           // Only update current page if we're not already on it
           if (savedPage !== this.currentPage) {
             // Make sure we have a valid page number
-            const targetPage = Math.max(1, Math.min(savedPage, this.totalPages));
-            
+            const targetPage = Math.max(
+              1,
+              Math.min(savedPage, this.totalPages)
+            );
+
             // Update current page without triggering a save
             this.currentPage = targetPage;
-            
+
             // Render the page
             await this.renderPage(targetPage);
-            
+
             // Update the progress bar
-            this.readingProgress = Math.round((targetPage / this.totalPages) * 100);
-            
+            this.readingProgress = Math.round(
+              (targetPage / this.totalPages) * 100
+            );
+
             console.log(`Navigated to saved page: ${targetPage}`);
           }
         }
@@ -959,20 +1072,20 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
       console.warn('Cannot save progress: No user ID');
       return;
     }
-    
+
     if (!this.bookId) {
       console.warn('Cannot save progress: No book ID');
       return;
     }
-    
+
     // Don't save if we're already saving or if page hasn't changed
     if (this.isSavingProgress || this.currentPage === this.lastSavedPage) {
       return;
     }
-    
+
     this.isSavingProgress = true;
     let loading: HTMLIonLoadingElement | null = null;
-    
+
     try {
       // Only show loader if explicitly requested and not already showing one
       if (showLoader && !this.loadingCtrl.getTop()) {
@@ -982,39 +1095,42 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
           spinner: 'crescent',
           showBackdrop: false,
           cssClass: 'progress-saving',
-          translucent: true
+          translucent: true,
         });
         await loading.present();
       }
-      
+
       // Calculate progress percentage
-      const progress = Math.min(100, Math.round((this.currentPage / this.totalPages) * 100));
-      
+      const progress = Math.min(
+        100,
+        Math.round((this.currentPage / this.totalPages) * 100)
+      );
+
       // Update progress on server
-      await this.bookService.updateReadingProgress(
-        this.userId,
-        {
+      await this.bookService
+        .updateReadingProgress(this.userId, {
           bookId: +this.bookId,
           currentPage: this.currentPage,
           totalPages: this.totalPages,
-        } as ReadingProgressRequestDto
-      ).toPromise();
-      
+        } as ReadingProgressRequestDto)
+        .toPromise();
+
       // Update local state
       this.lastSavedPage = this.currentPage;
       this.readingProgress = progress;
-      
+
       // Update loading message if shown
       if (loading) {
         loading.message = 'Progress saved!';
         loading.duration = 1000;
       }
-      
-      console.log(`Progress saved: page ${this.currentPage}/${this.totalPages} (${progress}%)`);
-      
+
+      console.log(
+        `Progress saved: page ${this.currentPage}/${this.totalPages} (${progress}%)`
+      );
     } catch (error) {
       console.error('Error saving reading progress:', error);
-      
+
       // Show error to user if we have a loading indicator
       if (loading) {
         loading.message = 'Failed to save progress';
@@ -1040,11 +1156,16 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
       const payload: ReadingProgressRequestDto = {
         bookId: +this.book.id,
         currentPage: this.currentPage,
-        totalPages: this.totalPages
+        totalPages: this.totalPages,
       };
-      await this.bookService.updateReadingProgress(this.userId, payload).toPromise();
+      await this.bookService
+        .updateReadingProgress(this.userId, payload)
+        .toPromise();
       this.lastSavedPage = this.currentPage;
-      this.readingProgress = this.totalPages > 0 ? Math.round((this.currentPage / this.totalPages) * 100) : 0;
+      this.readingProgress =
+        this.totalPages > 0
+          ? Math.round((this.currentPage / this.totalPages) * 100)
+          : 0;
       console.log('Progress saved', payload);
     } catch (err) {
       console.error('Save reading progress error', err);
@@ -1057,24 +1178,29 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
   // local progress update (non-network)
   private updateReadingProgressLocal() {
     if (!this.userId || !this.book) return;
-    const percent = this.totalPages > 0 ? Math.round((this.currentPage / this.totalPages) * 100) : 0;
+    const percent =
+      this.totalPages > 0
+        ? Math.round((this.currentPage / this.totalPages) * 100)
+        : 0;
     this.readingProgress = percent;
     // send network update (debounced or immediate depending on your needs)
     // we'll call service via updateReadingProgressLocal to avoid double-save with progressInterval
-    this.bookService.updateReadingProgress(this.userId, {
-      bookId: +this.book.id,
-      currentPage: this.currentPage,
-      totalPages: this.totalPages
-    }).subscribe({
-      next: (res: any) => {
-        if (res.success) {
-          this.lastSavedPage = this.currentPage;
-        }
-      },
-      error: (err: any) => {
-        console.warn('Non-blocking save failed', err);
-      }
-    });
+    this.bookService
+      .updateReadingProgress(this.userId, {
+        bookId: +this.book.id,
+        currentPage: this.currentPage,
+        totalPages: this.totalPages,
+      })
+      .subscribe({
+        next: (res: any) => {
+          if (res.success) {
+            this.lastSavedPage = this.currentPage;
+          }
+        },
+        error: (err: any) => {
+          console.warn('Non-blocking save failed', err);
+        },
+      });
   }
 
   // ---------------------------
@@ -1098,16 +1224,19 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
     this.isLoading = true;
     this.progressInterval = window.setInterval(() => {
       if (this.currentPage !== this.lastSavedPage) {
-        this.saveReadingProgress().catch(e => console.error('Auto-save failed', e));
+        this.saveReadingProgress().catch((e) =>
+          console.error('Auto-save failed', e)
+        );
       }
     }, 30000);
-    
 
     // visibility change -> save immediately when hidden
     const handleVisibility = () => {
       if (document.visibilityState === 'hidden') {
         if (this.currentPage !== this.lastSavedPage) {
-          this.saveReadingProgress().catch(e => console.error('Visibility save failed', e));
+          this.saveReadingProgress().catch((e) =>
+            console.error('Visibility save failed', e)
+          );
         }
       }
     };
@@ -1124,7 +1253,9 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
       document.removeEventListener('visibilitychange', handleVisibility);
       // final save
       if (this.currentPage !== this.lastSavedPage) {
-        this.saveReadingProgress().catch(e => console.error('Final save in cleanup failed', e));
+        this.saveReadingProgress().catch((e) =>
+          console.error('Final save in cleanup failed', e)
+        );
       }
     };
   }
@@ -1139,12 +1270,16 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
 
   private onWindowResize() {
     if (this.pdfDoc && this.pageIsRendered) {
-      this.renderPage(this.currentPage).catch(e => console.error('Resize render failed', e));
+      this.renderPage(this.currentPage).catch((e) =>
+        console.error('Resize render failed', e)
+      );
     }
   }
 
   private onFullscreenChange() {
-    this.isFullscreen = !!(document.fullscreenElement || (document as any).webkitFullscreenElement);
+    this.isFullscreen = !!(
+      document.fullscreenElement || (document as any).webkitFullscreenElement
+    );
   }
 
   // ---------------------------
@@ -1156,8 +1291,19 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async showToast(message: string) {
-    const t = await this.toastCtrl.create({ message, duration: 2500, position: 'bottom' });
+    const t = await this.toastCtrl.create({
+      message,
+      duration: 2500,
+      position: 'bottom',
+    });
     await t.present();
   }
-}
 
+  async openSubscriptionModal() {
+    const modal = await this.modalCtrl.create({
+      component: SubscriptionModalComponent, // 👈 use the component class
+      cssClass: 'subscription-modal-wrapper',
+    });
+    await modal.present();
+  }
+}

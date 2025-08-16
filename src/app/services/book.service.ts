@@ -89,6 +89,28 @@ export class BookService {
         return this.http.get<ApiResponse<ReadingProgressResponseDto>>(`${this.apiUrl}/api/Books/user/${userId}/reading-progress`);
       }
 
+      startSession(userId: string, bookId: string): Observable<any> {
+        return this.http.post(
+          `${this.apiUrl}/api/Books/start?userId=${userId}&bookId=${bookId}`,
+          {}, // empty body
+          { responseType: 'text' }
+        );
+      }
+    
+      // End session (when closing book)
+      endSession(userId: string, bookId: string,sessionMinutes:string): Observable<any> {
+        return this.http.post(
+          `${this.apiUrl}/api/Books/end?userId=${userId}&bookId=${bookId}&sessionMinutes=${sessionMinutes}`,
+          {}, // empty body
+          { responseType: 'text' }
+        );
+      }
+      
+      // Check usage (whether limit exceeded or not)
+      checkUsage(userId: string): Observable<any> {
+        return this.http.get(`${this.apiUrl}/api/Books/check?userId=${userId}`);
+      }
+
       /**
        * Search for books with various filters
        * @param params Search parameters

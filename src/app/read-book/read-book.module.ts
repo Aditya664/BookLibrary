@@ -8,6 +8,7 @@ import { ReadBookPageRoutingModule } from './read-book-routing.module';
 
 import { ReadBookPage } from './read-book.page';
 import { TruncatePipe } from '../shared/pipes/truncate.pipe';
+import { SubscriptionModalComponent } from './subscription-modal.component';
 
 @NgModule({
   imports: [
@@ -16,10 +17,11 @@ import { TruncatePipe } from '../shared/pipes/truncate.pipe';
     ReactiveFormsModule,
     IonicModule, 
     ReadBookPageRoutingModule,
-    TruncatePipe
+    TruncatePipe,
   ],
   declarations: [
-    ReadBookPage
+    ReadBookPage,
+    SubscriptionModalComponent
   ]
 })
 export class ReadBookPageModule {}
