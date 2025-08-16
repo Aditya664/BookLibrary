@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { TabsPage } from './tabs.page';
+import { FavoritesPage } from '../favorites/favorites.page';
 
 const routes: Routes = [
   {
@@ -11,6 +12,11 @@ const routes: Routes = [
         path: 'dashboard',
         loadChildren: () =>
           import('../dashboard/dashboard.module').then(m => m.DashboardPageModule),
+      },
+      {
+        path: 'favorites',
+        loadChildren: () =>
+          import('../favorites/favorites.module').then(m => m.FavoritesModule),
       },
       {
         path: 'search',

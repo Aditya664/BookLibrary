@@ -144,7 +144,6 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
               console.log('limit exceeded');
               setTimeout(async () => {
                 this.openSubscriptionModal();
-
               }, 10);
             } else {
               this.bookService
@@ -869,15 +868,22 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
   // ---------------------------
   toggleBookmark() {
     if (!this.bookId) return;
-    const index = this.bookmarks.indexOf(this.currentPage);
-    if (index > -1) {
-      this.bookmarks.splice(index, 1);
-      this.showToast('Bookmark removed');
-    } else {
-      this.bookmarks.push(this.currentPage);
-      this.bookmarks.sort((a, b) => a - b);
-      this.showToast('Page bookmarked');
-    }
+    this.bookService
+      .addBookToFavoritesAsync({
+        bookId: this.book?.id.toString() ?? '',
+        userId: TokenService.getUserId() ?? '',
+      })
+      .subscribe(() => {
+        const index = this.bookmarks.indexOf(this.currentPage);
+        if (index > -1) {
+          this.bookmarks.splice(index, 1);
+          this.showToast('Bookmark removed');
+        } else {
+          this.bookmarks.push(this.currentPage);
+          this.bookmarks.sort((a, b) => a - b);
+          this.showToast('Page bookmarked');
+        }
+      });
   }
 
   isBookmarked(): boolean {

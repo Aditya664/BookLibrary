@@ -1,38 +1,162 @@
-<ion-content class="ion-padding">
-  <ion-grid>
-    <ion-row>
-      <ion-col size="12">
-        <h2>Your Favorites</h2>
-        <p *ngIf="favorites.length === 0 && !isLoading">You haven't added any favorites yet.</p>
-        
-        <ion-list *ngIf="favorites.length > 0">
-          <ion-item *ngFor="let favorite of favorites" (click)="navigateToBook(favorite.book.id)">
-            <ion-thumbnail slot="start">
-              <div *ngIf="favorite.book.image" class="book-cover">
-                <img [src]="favorite.book.image" [alt]="favorite.book.title" />
-              </div>
-              <div *ngIf="!favorite.book.image" class="placeholder-content">
-                <div class="gradient-background"></div>
-                <div class="book-initials">{{ getInitials(favorite.book.title) }}</div>
-                <div class="book-title-overlay">{{ favorite.book.title }}</div>
-              </div>
-            </ion-thumbnail>
-            <ion-label>
-              <h3>{{ favorite.book.title }}</h3>
-              <p>{{ favorite.book.author }}</p>
-              <p>Added: {{ favorite.createdAt | date }}</p>
-            </ion-label>
-          </ion-item>
-        </ion-list>
-        
-        <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
-</ion-content>
+<ion-content [fullscreen]="true" class="uber-dashboard" [scrollY]="true" [scrollEvents]="true" (ionScroll)="onScroll($event)" [class.header-visible]="!hideHeader">
+  <!-- Header -->
+  <div class="uber-header" [class.scrolled]="headerScrolled">
+    <div class="header-content">
+      <button class="back-btn" (click)="navigateBack()" aria-label="Go back">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </button>
+      <div class="header-title" *ngIf="headerScrolled">My Profile</div>
+      <div class="spacer"></div>
+      <button class="action-btn" (click)="editProfile()" aria-label="Edit profile">
+        <ion-icon name="create-outline"></ion-icon>
+      </button>
+    </div>
+  </div>
 
-<ion-footer>
-  <ion-toolbar color="primary">
-    <ion-title>E-Book Library</ion-title>
-  </ion-toolbar>
-</ion-footer>
+  <!-- Main Content -->
+  <div class="content-wrapper">
+    <!-- Profile Header Section -->
+    <div class="profile-header-card">
+      <div class="profile-avatar-wrapper">
+        <div class="avatar-circle-large">
+          <span class="avatar-initials">{{ getUserInitials() }}</span>
+        </div>
+      </div>
+      <div class="profile-info">
+        <h1 class="profile-name">{{ userProfile.name }}</h1>
+        <p class="profile-email">{{ userProfile.email }}</p>
+        <div class="member-since">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <span>Member since {{ getMemberSince() }}</span>
+        </div>
+      </div>
+    </div>
+
+  <!-- Reading Statistics -->
+  <div class="stats-section">
+    <h2>Reading Statistics</h2>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number">{{ readingStats.booksRead }}</div>
+        <div class="stat-label">Books Started</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ readingStats.booksCompleted }}</div>
+        <div class="stat-label">Completed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ (readingStats.totalReadingTime / 60) | number:'1.0-0' }}h</div>
+        <div class="stat-label">Reading Time</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ readingStats.currentStreak }}</div>
+        <div class="stat-label">Current Streak</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reading Goal -->
+  <div class="goal-section">
+    <div class="goal-header">
+      <h2>{{ readingGoal.year }} Reading Goal</h2>
+      <ion-button fill="clear" size="small" (click)="updateReadingGoal()">
+        <ion-icon name="create-outline"></ion-icon>
+      </ion-button>
+    </div>
+    <div class="goal-progress">
+      <div class="progress-text">
+        <span class="current">{{ readingGoal.current }}</span>
+        <span class="separator"> / </span>
+        <span class="target">{{ readingGoal.target }} books</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="getProgressPercentage()"></div>
+      </div>
+      <div class="progress-percentage">{{ getProgressPercentage() | number:'1.0-0' }}% complete</div>
+    </div>
+  </div>
+
+  <!-- Recently Read Books -->
+  <!-- <div class="recent-books-section" *ngIf="recentBooks.length > 0">
+    <div class="section-header">
+      <h2>Continue Reading</h2>
+      <ion-button fill="clear" size="small" (click)="seeAllBooks()">
+        See All
+      </ion-button>
+    </div>
+    <div class="recent-books-list">
+      <div class="book-item" *ngFor="let progress of recentBooks" (click)="navigateToReadBook(progress.bookId)">
+        <div class="book-thumbnail">
+          <div *ngIf="progress.book.image" class="book-cover">
+            <img [src]="progress.book.image" [alt]="progress.book.title" />
+          </div>
+          <div *ngIf="!progress.book.image" class="placeholder-content">
+            <div class="gradient-background"></div>
+            <div class="book-initials">{{ getInitials(progress.book.title) }}</div>
+          </div>
+        </div>
+        <div class="book-details">
+          <h3 class="book-title">{{ progress.book.title }}</h3>
+          <p class="book-author">{{ progress.book.author }}</p>
+          <div class="reading-progress">
+            <div class="progress-bar-small">
+              <div class="progress-fill-small" [style.width.%]="progress.percentage"></div>
+            </div>
+            <span class="progress-text-small">{{ progress.percentage | number:'1.0-0' }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> -->
+
+  <!-- Account Settings -->
+  <div class="settings-section">
+    <h2>Settings</h2>
+    <div class="settings-list">
+      <!-- <div class="setting-item">
+        <div class="setting-info">
+          <ion-icon name="moon-outline" class="setting-icon"></ion-icon>
+          <span class="setting-label">Dark Mode</span>
+        </div>
+        <ion-toggle 
+          [checked]="preferences.darkMode" 
+          (ionChange)="togglePreference('darkMode')">
+        </ion-toggle>
+      </div>
+      
+      <div class="setting-item">
+        <div class="setting-info">
+          <ion-icon name="notifications-outline" class="setting-icon"></ion-icon>
+          <span class="setting-label">Notifications</span>
+        </div>
+        <ion-toggle 
+          [checked]="preferences.notifications" 
+          (ionChange)="togglePreference('notifications')">
+        </ion-toggle>
+      </div>
+      
+      <div class="setting-item">
+        <div class="setting-info">
+          <ion-icon name="cloud-upload-outline" class="setting-icon"></ion-icon>
+          <span class="setting-label">Auto Backup</span>
+        </div>
+        <ion-toggle 
+          [checked]="preferences.autoBackup" 
+          (ionChange)="togglePreference('autoBackup')">
+        </ion-toggle>
+      </div> -->
+      
+      <div class="setting-item" (click)="logout()">
+        <div class="setting-info logout">
+          <ion-icon name="log-out-outline" class="setting-icon logout-icon"></ion-icon>
+          <span class="setting-label logout-label">Logout</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ion-spinner *ngIf="isLoading" name="crescent" class="loading-spinner"></ion-spinner>
+  
+  <!-- Bottom spacer for tab bar -->
+  <div class="bottom-spacer"></div>
+<!-- </ion-content> -->

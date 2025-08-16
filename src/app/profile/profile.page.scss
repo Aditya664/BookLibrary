@@ -1,125 +1,529 @@
-ion-content {
-  --background: var(--ion-background-gradient);
-  --padding-top: calc(var(--total-header-height) + 16px); // Status bar + header + extra spacing
-  
-  ion-grid {
-    padding: 0;
-    
-    ion-row {
-      ion-col {
-        h2 {
-          margin-top: 20px;
-          margin-bottom: 15px;
-          color: var(--ion-text-color, #333);
-          font-weight: bold;
-        }
-        
-        p {
-          color: var(--ion-text-color-secondary, #666);
-          font-size: 16px;
-          margin-bottom: 20px;
-        }
-        
-        ion-list {
-          background: var(--ion-card-background, white);
-          border-radius: 12px;
-          padding: 0;
-          box-shadow: var(--app-box-shadow);
-          
-          ion-item {
-            --padding-start: 16px;
-            --padding-end: 16px;
-            --inner-padding-end: 0;
-            --border-width: 0;
-            --border-style: none;
-            cursor: pointer;
-            
-            ion-thumbnail {
-              width: 80px;
-              height: 100px;
-              margin: 10px 16px 10px 0;
-              
-              .book-cover {
-                width: 100%;
-                height: 100%;
-                
-                img {
-                  width: 100%;
-                  height: 100%;
-                  object-fit: cover;
-                  border-radius: 8px;
-                }
-              }
-              
-              .placeholder-content {
-                position: relative;
-                width: 100%;
-                height: 100%;
-                border-radius: 8px;
-                overflow: hidden;
-                
-                .gradient-background {
-                  position: absolute;
-                  top: 0;
-                  left: 0;
-                  width: 100%;
-                  height: 100%;
-                  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-                }
-                
-                .book-initials {
-                  position: absolute;
-                  top: 50%;
-                  left: 50%;
-                  transform: translate(-50%, -50%);
-                  color: white;
-                  font-size: 24px;
-                  font-weight: bold;
-                  text-align: center;
-                }
-                
-                .book-title-overlay {
-                  position: absolute;
-                  bottom: 0;
-                  left: 0;
-                  width: 100%;
-                  padding: 8px;
-                  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
-                  color: white;
-                  font-size: 12px;
-                  text-align: center;
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  white-space: nowrap;
-                }
-              }
-            }
-            
-            ion-label {
-              h3 {
-                font-weight: bold;
-                margin-bottom: 5px;
-              }
-              
-              p {
-                margin: 0;
-                font-size: 14px;
-                color: var(--ion-text-color-secondary, #666);
-                
-                &:last-child {
-                  font-size: 12px;
-                  color: var(--ion-text-color-tertiary, #999);
-                }
-              }
-            }
-          }
-        }
-        
-        ion-spinner {
-          display: block;
-          margin: 20px auto;
+@import "src/app/shared/styles/loader";
+@import "../../global.scss";
+@import "src/theme/variables";
+
+:host {
+  display: block;
+  --header-height: 56px;
+  --status-bar-height: 24px;
+  --total-header-height: calc(var(--header-height) + var(--status-bar-height));
+
+  // Uber-style color system (matching dashboard)
+  --uber-bg: #ffffff;
+  --uber-text: #000000;
+  --uber-text-secondary: #6b7280;
+  --uber-border: #e5e7eb;
+  --uber-card-bg: #ffffff;
+  --uber-green: #00d4aa;
+  --uber-blue: #1fbad3;
+  --uber-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --uber-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --uber-border-light: #f3f4f6;
+
+  // Modern spacing system
+  --uber-spacing-xs: 4px;
+  --uber-spacing-sm: 8px;
+  --uber-spacing-md: 16px;
+  --uber-spacing-lg: 24px;
+  --uber-spacing-xl: 32px;
+  --uber-spacing-2xl: 48px;
+  --uber-spacing-3xl: 64px;
+
+  @supports (-webkit-appearance: none) {
+    --status-bar-height: 44px;
+    --total-header-height: calc(var(--header-height) + 44px);
+  }
+}
+
+.uber-dashboard {
+  --ion-background-color: #ffffff;
+  --background: #ffffff;
+  font-family: var(--ion-font-family);
+  color: #000000;
+  line-height: 1.4;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+
+  // Modern sticky header with status bar support (exact match to book details)
+  .uber-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--total-header-height);
+    background: var(--uber-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--uber-border);
+    display: flex;
+    align-items: center;
+    padding: 0 var(--uber-spacing-md);
+    z-index: 1000;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    // Status bar safe area
+    padding-top: var(--status-bar-height);
+
+    &.scrolled {
+      background: var(--uber-bg);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border-bottom-color: var(--uber-border);
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      height: var(--header-height);
+    }
+
+    .back-btn,
+    .action-btn {
+      border: none;
+      border-radius: 12px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      outline: none;
+      width: 44px;
+      height: 44px;
+      background: var(--uber-border-light);
+      color: var(--uber-text);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+      &:focus {
+        outline: 2px solid var(--uber-green);
+        outline-offset: 2px;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+      }
+
+      &:hover {
+        background: var(--uber-border-light);
+        transform: scale(1.05);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+
+      ion-icon {
+        font-size: 20px;
+      }
+    }
+
+    .header-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #111827;
+      color: var(--uber-text);
+      margin: 0 0 0 12px;
+      letter-spacing: -0.02em;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      text-transform: none;
+    }
+
+    .spacer {
+      flex: 1;
+    }
+  }
+
+  // Content wrapper with proper spacing (matching other pages)
+  .content-wrapper {
+    padding: calc(var(--total-header-height) + var(--uber-spacing-lg)) var(--uber-spacing-lg) calc(var(--ion-tab-bar-height, 56px) + var(--uber-spacing-3xl));
+    max-width: 1200px;
+    margin: 0 auto;
+
+    h2 {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--uber-text);
+      margin: 0 0 var(--uber-spacing-lg);
+      letter-spacing: -0.02em;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+  }
+
+  // Profile Header Card (matching dashboard cards)
+  .profile-header-card {
+    background: var(--uber-card-bg);
+    border: 1px solid var(--uber-border);
+    border-radius: 16px;
+    box-shadow: var(--uber-shadow);
+    margin-bottom: var(--uber-spacing-xl);
+    padding: var(--uber-spacing-xl);
+    text-align: center;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--uber-green), var(--uber-blue));
+    }
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--uber-shadow-hover);
+    }
+
+    .profile-avatar-wrapper {
+      margin-bottom: var(--uber-spacing-md);
+    }
+
+    .avatar-circle-large {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto var(--uber-spacing-md);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+
+      .avatar-initials {
+        color: white;
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1;
+      }
+    }
+
+    .profile-info {
+      .profile-name {
+        margin: 0 0 var(--uber-spacing-xs);
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--uber-text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+
+      .profile-email {
+        margin: 0 0 var(--uber-spacing-sm);
+        color: var(--uber-text-secondary);
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .member-since {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--uber-text-secondary);
+        font-weight: 500;
+
+        ion-icon {
+          font-size: 14px;
         }
       }
     }
+  }
+
+  // Statistics Section (matching dashboard cards)
+  .stats-section {
+    background: var(--uber-card-bg);
+    border: 1px solid var(--uber-border);
+    border-radius: 16px;
+    box-shadow: var(--uber-shadow);
+    margin-bottom: var(--uber-spacing-xl);
+    padding: var(--uber-spacing-lg);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--uber-shadow-hover);
+    }
+
+    h2 {
+      margin: 0 0 var(--uber-spacing-md);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--uber-text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--uber-spacing-md);
+      margin: 0;
+      padding: 0;
+
+      .stat-card {
+        background: linear-gradient(135deg, #4dd0e1 0%, #26c6da 100%);
+        border-radius: 12px;
+        padding: var(--uber-spacing-md);
+        text-align: center;
+        color: white;
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(77, 208, 225, 0.3);
+        }
+
+        .stat-number {
+          font-size: 24px;
+          font-weight: 700;
+          color: white;
+          margin-bottom: 4px;
+          letter-spacing: -0.02em;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .stat-label {
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.9);
+          font-weight: 500;
+        }
+      }
+    }
+  }
+
+  // Reading Goals Section (matching dashboard cards)
+  .goal-section {
+    background: var(--uber-card-bg);
+    border: 1px solid var(--uber-border);
+    border-radius: 16px;
+    box-shadow: var(--uber-shadow);
+    margin-bottom: var(--uber-spacing-xl);
+    padding: var(--uber-spacing-lg);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #43e97b, #38f9d7);
+    }
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--uber-shadow-hover);
+    }
+
+    .goal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--uber-spacing-lg);
+
+      h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--uber-text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+
+      ion-button {
+        --color: var(--uber-text-secondary);
+        --background: transparent;
+        --border-radius: 8px;
+        --box-shadow: none;
+        margin: 0;
+        font-weight: 500;
+      }
+    }
+
+    .goal-progress {
+      .progress-text {
+        display: flex;
+        align-items: baseline;
+        margin-bottom: var(--uber-spacing-md);
+
+        .current {
+          font-size: 28px;
+          font-weight: 700;
+          color: var(--uber-text);
+        }
+
+        .separator {
+          font-size: 20px;
+          color: var(--uber-text-secondary);
+          margin: 0 8px;
+        }
+
+        .target {
+          font-size: 16px;
+          color: var(--uber-text-secondary);
+          font-weight: 500;
+        }
+      }
+
+      .progress-bar {
+        height: 8px;
+        background: var(--uber-border-light);
+        border-radius: 4px;
+        overflow: hidden;
+        margin: var(--uber-spacing-md) 0;
+
+        .progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, var(--uber-green), var(--uber-blue));
+          border-radius: 4px;
+          transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+      }
+
+      .progress-percentage {
+        font-size: 12px;
+        color: var(--uber-text-secondary);
+        font-weight: 500;
+      }
+    }
+  }
+
+  // Settings Section (matching dashboard cards)
+  .settings-section {
+    background: var(--uber-card-bg);
+    border: 1px solid var(--uber-border);
+    border-radius: 16px;
+    box-shadow: var(--uber-shadow);
+    margin-bottom: var(--uber-spacing-3xl);
+    padding: var(--uber-spacing-lg);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #ff9a9e, #fad0c4);
+    }
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--uber-shadow-hover);
+    }
+
+    h2 {
+      margin: 0 0 var(--uber-spacing-md);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--uber-text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .settings-list {
+      .setting-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--uber-spacing-md);
+        border-radius: 12px;
+        margin-bottom: var(--uber-spacing-xs);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        background: var(--uber-card-bg);
+        border: 1px solid var(--uber-border);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+
+        &:hover {
+          background: var(--uber-border-light);
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        &:last-child {
+          border-bottom: none;
+          margin-bottom: 0;
+        }
+
+        .setting-info {
+          display: flex;
+          align-items: center;
+          width: 100%;
+
+          .setting-icon {
+            font-size: 22px;
+            color: var(--uber-text);
+            margin-right: var(--uber-spacing-md);
+            min-width: 24px;
+            text-align: center;
+          }
+
+          .setting-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--uber-text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          }
+
+          &.logout {
+            .logout-icon {
+              color: #dc2626;
+            }
+
+            .logout-label {
+              color: #dc2626;
+            }
+          }
+        }
+
+        ion-toggle {
+          --background: #e5e7eb;
+          --background-checked: var(--uber-green);
+          --handle-background: white;
+          --handle-background-checked: white;
+        }
+      }
+    }
+  }
+
+  .loading-spinner {
+    display: block;
+    margin: var(--uber-spacing-2xl) auto;
+    --color: var(--uber-green);
+    width: 44px;
+    height: 44px;
+  }
+
+  // Bottom spacer to account for tab bar
+  .bottom-spacer {
+    height: calc(var(--ion-tab-bar-height, 56px) + var(--uber-spacing-lg));
+    width: 100%;
+    flex-shrink: 0;
   }
 }

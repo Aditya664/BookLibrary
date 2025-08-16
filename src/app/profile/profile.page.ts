@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { BookService } from '../services/book.service';
 import { TokenService } from '../services/token.service';
-import { FavoriteResponseDto } from '../Model/ApiResponse';
-import { NavController } from '@ionic/angular';
+import { FavoriteResponseDto, ReadingProgressResponseDto } from '../Model/ApiResponse';
+import { NavController, AlertController, ToastController } from '@ionic/angular';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-profile',
@@ -12,24 +13,116 @@ import { NavController } from '@ionic/angular';
 })
 export class ProfilePage implements OnInit {
   favorites: FavoriteResponseDto[] = [];
+  recentBooks: ReadingProgressResponseDto[] = [];
+  readingStats = {
+    booksRead: 0,
+    booksCompleted: 0,
+    totalReadingTime: 0,
+    averageRating: 0,
+    favoriteGenre: 'Fiction',
+    currentStreak: 0,
+    longestStreak: 0
+  };
   isLoading = false;
   userId: string | null = null;
+  readingGole = localStorage.getItem('readingGole');
+  headerScrolled = false;
+  hideHeader = false;
+  lastScrollTop = 0;
+  userProfile = {
+    name: 'Book Lover',
+    email: 'user@booklibrary.com',
+    joinDate: new Date('2024-01-01'),
+    avatar: ''
+  };
+  readingGoal = {
+    target: parseInt(this.readingGole ?? '10'),
+    current: 0,
+    year: new Date().getFullYear()
+  };
+  preferences = {
+    darkMode: false,
+    notifications: true,
+    autoBackup: true
+  };
 
   constructor(
     private bookService: BookService,
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    private alertController: AlertController,
+    private toastController: ToastController,
+    private router: Router
   ) { }
 
   ngOnInit() {
     this.userId = TokenService.getUserId();
     if (this.userId) {
-      this.loadUserFavorites();
+      this.loadProfileData();
     }
   }
 
-  loadUserFavorites() {
-    // Favorites functionality removed
+
+  async loadProfileData() {
+    this.isLoading = true;
+    try {
+      // Load user profile info
+      this.loadUserProfile();
+      
+      // Load reading progress and calculate stats from existing data
+      if (this.userId) {
+        this.bookService.getUserReadingProgress(this.userId).subscribe({
+          next: (response) => {
+            if (response.success && response.data) {
+              const allProgress = response.data;
+              
+              // Filter recent books with progress
+              this.recentBooks = allProgress
+                .filter((progress: ReadingProgressResponseDto) => progress.percentage > 0)
+                .sort((a: ReadingProgressResponseDto, b: ReadingProgressResponseDto) => 
+                  new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime())
+                .slice(0, 5);
+              
+              // Calculate stats from existing progress data
+              this.calculateStatsFromProgress(allProgress);
+            }
+          },
+          error: (error) => {
+            console.error('Error loading reading progress:', error);
+            this.isLoading = false;
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error loading profile data:', error);
+      this.isLoading = false;
+    }
+  }
+
+  calculateStatsFromProgress(progressData: ReadingProgressResponseDto[]) {
+    const completedBooks = progressData.filter(p => p.percentage >= 100);
+    const inProgressBooks = progressData.filter(p => p.percentage > 0 && p.percentage < 100);
+    
+    this.readingStats = {
+      booksRead: progressData.length,
+      booksCompleted: completedBooks.length,
+      totalReadingTime: progressData.length * 45, // Estimate 45 min per book
+      averageRating: 4.2, // Mock value
+      favoriteGenre: 'Fiction', // Mock value
+      currentStreak: Math.min(completedBooks.length, 7),
+      longestStreak: Math.min(completedBooks.length + 3, 15)
+    };
+    
+    this.readingGoal.current = completedBooks.length;
     this.isLoading = false;
+  }
+
+  loadUserProfile() {
+    // In a real app, this would come from user service
+    const userInfo = TokenService.getUserInfo();
+    if (userInfo) {
+      this.userProfile.name = userInfo.name || 'Book Lover';
+      this.userProfile.email = userInfo.email || 'user@booklibrary.com';
+    }
   }
 
   removeFavorite(bookId: number) {
@@ -49,5 +142,156 @@ export class ProfilePage implements OnInit {
       .join('')
       .substring(0, 2)
       .toUpperCase();
+  }
+
+  getUserInitials(): string {
+    return this.getInitials(this.userProfile.name);
+  }
+
+  getProgressPercentage(): number {
+    return Math.min((this.readingGoal.current / this.readingGoal.target) * 100, 100);
+  }
+
+  async updateReadingGoal() {
+    const alert = await this.alertController.create({
+      header: 'Update Reading Goal',
+      message: `Set your reading goal for ${this.readingGoal.year}`,
+      inputs: [
+        {
+          name: 'target',
+          type: 'number',
+          placeholder: 'Number of books',
+          value: this.readingGoal.target
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Update',
+          handler: (data) => {
+            if (data.target && data.target > 0) {
+              this.readingGole = data.target;
+              localStorage.setItem('readingGole', this.readingGole?.toString() ?? '0');
+              this.readingGoal.target = parseInt(this.readingGole ?? '0');
+              this.showToast('Reading goal updated!');
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  async editProfile() {
+    const alert = await this.alertController.create({
+      header: 'Edit Profile',
+      inputs: [
+        {
+          name: 'name',
+          type: 'text',
+          placeholder: 'Your name',
+          value: this.userProfile.name
+        },
+        {
+          name: 'email',
+          type: 'email',
+          placeholder: 'Your email',
+          value: this.userProfile.email
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Save',
+          handler: (data) => {
+            if (data.name) this.userProfile.name = data.name;
+            if (data.email) this.userProfile.email = data.email;
+            this.showToast('Profile updated!');
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  togglePreference(key: keyof typeof this.preferences) {
+    this.preferences[key] = !this.preferences[key];
+    const keyName = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1');
+    this.showToast(`${keyName} ${this.preferences[key] ? 'enabled' : 'disabled'}`);
+  }
+
+  async logout() {
+    const alert = await this.alertController.create({
+      header: 'Logout',
+      message: 'Are you sure you want to logout?',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Logout',
+          handler: () => {
+            TokenService.clearToken();
+            this.router.navigate(['/login']);
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  async showToast(message: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2000,
+      position: 'bottom'
+    });
+    await toast.present();
+  }
+
+  navigateToReadBook(bookId: number) {
+    this.navCtrl.navigateForward(`/read-book/${bookId}`);
+  }
+
+  navigateBack() {
+    this.navCtrl.back();
+  }
+
+  getMemberSince(): string {
+    if (!this.userProfile.joinDate) return '';
+    const date = new Date(this.userProfile.joinDate);
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+
+  seeAllBooks() {
+    this.navCtrl.navigateForward('/see-all-books');
+  }
+
+  // Handle scroll events for header show/hide (exact match to book details)
+  onScroll(event: any) {
+    const scrollTop = event.detail?.scrollTop || 0;
+    this.headerScrolled = scrollTop > 50;
+    
+    // Hide/show header based on scroll direction
+    if (scrollTop > this.lastScrollTop && scrollTop > 100) {
+      this.hideHeader = true;
+    } else {
+      this.hideHeader = false;
+    }
+    
+    // For iOS bounce effect
+    if (scrollTop <= 0) {
+      this.hideHeader = false;
+      this.headerScrolled = false;
+    }
+    
+    this.lastScrollTop = scrollTop;
   }
 }

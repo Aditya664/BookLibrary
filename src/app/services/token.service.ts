@@ -61,4 +61,24 @@ export class TokenService {
       return null;
     }
   }
+
+  static getUserInfo(): { name: string; email: string } | null {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return null;
+
+    try {
+      const decoded = jwtDecode<JwtPayload>(token);
+      return {
+        name: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || '',
+        email: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || ''
+      };
+    } catch (e) {
+      console.error('Invalid token');
+      return null;
+    }
+  }
+
+  static clearToken(): void {
+    localStorage.removeItem('auth_token');
+  }
 }

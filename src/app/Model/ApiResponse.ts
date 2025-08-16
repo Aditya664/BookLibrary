@@ -41,8 +41,8 @@ export interface ApiResponse<T> {
   }
 
   export interface FavoriteRequestDto {
-    userId: number;
-    bookId: number;
+    userId: string;
+    bookId: string;
   }
 
   export interface FavoriteResponseDto {

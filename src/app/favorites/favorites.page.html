@@ -1,0 +1,41 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/home" icon="arrow-back"></ion-back-button>
+    </ion-buttons>
+    <ion-title>My Favorites</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Loading State -->
+  <div class="ion-text-center ion-padding" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading your favorites...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div class="ion-text-center ion-padding" *ngIf="!isLoading && favorites.length === 0">
+    <div class="ion-padding">
+      <ion-icon name="bookmark" style="font-size: 4rem; color: var(--ion-color-medium);"></ion-icon>
+      <h3>No Favorites Yet</h3>
+      <ion-note>Save your favorite books to find them here later</ion-note>
+    </div>
+  </div>
+
+  <!-- Favorites List -->
+  <ion-list *ngIf="!isLoading && favorites.length > 0" lines="none">
+    <ion-item *ngFor="let book of favorites" (click)="openBookDetails(book)" detail>
+      <ion-thumbnail slot="start">
+        <img [src]="book.coverImage || 'assets/icon/default-book-cover.png'" [alt]="book.title" />
+      </ion-thumbnail>
+      <ion-label>
+        <h3>{{ book.title || 'Untitled Book' }}</h3>
+        <p>{{ book.author || 'Unknown Author' }}</p>
+      </ion-label>
+      <ion-button fill="clear" (click)="$event.stopPropagation(); removeFromFavorites(book.id, $event)">
+        <ion-icon slot="icon-only" name="bookmark"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
+</ion-content>

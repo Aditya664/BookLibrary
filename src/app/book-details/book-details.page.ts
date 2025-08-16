@@ -6,6 +6,7 @@ import { Share } from '@capacitor/share';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { ApiResponse, BookResponse, ReviewResponse } from '../Model/ApiResponse';
+import { TokenService } from '../services/token.service';
 
 // Truncate pipe for template
 @Pipe({ name: 'truncate' })
@@ -215,6 +216,12 @@ export class BookDetailsPage implements OnInit {
 
   toggleBookmark() {
     this.isBookmarked = !this.isBookmarked;
+    this.bookService.addBookToFavoritesAsync({
+      bookId: this.book?.id.toString() ?? '',
+      userId: TokenService.getUserId() ?? ''
+    }).subscribe(() => {
+      this.isBookmarked = true;
+    });
     const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
     if (this.isBookmarked) {
       bookmarks.push(this.book);

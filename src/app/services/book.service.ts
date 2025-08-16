@@ -66,11 +66,17 @@ export class BookService {
       }
 
       addBookToFavoritesAsync(request: FavoriteRequestDto): Observable<ApiResponse<FavoriteResponseDto>> {
-        return this.http.post<ApiResponse<FavoriteResponseDto>>(`${this.apiUrl}/api/Books/favorites`, request);
+        return this.http.post<ApiResponse<FavoriteResponseDto>>(`${this.apiUrl}/api/Books/toggleFavorites`, request);
       }
 
       getUserFavoritesAsync(userId: string): Observable<ApiResponse<FavoriteResponseDto[]>> {
         return this.http.get<ApiResponse<FavoriteResponseDto[]>>(`${this.apiUrl}/api/Books/user/${userId}/favorites`);
+      }
+
+      removeFromFavorites(userId: string, bookId: string): Observable<ApiResponse<boolean>> {
+        return this.http.delete<ApiResponse<boolean>>(
+          `${this.apiUrl}/api/Books/user/${userId}/favorites/${bookId}`
+        );
       }
 
       updateReadingProgress(userId: string, request: ReadingProgressRequestDto): Observable<ApiResponse<ReadingProgressResponseDto>> {
@@ -82,7 +88,7 @@ export class BookService {
       }
 
       getUserReadingProgress(userId: string): Observable<ApiResponse<ReadingProgressResponseDto[]>> {
-        return this.http.get<ApiResponse<ReadingProgressResponseDto[]>>(`${this.apiUrl}/api/Books/user/${userId}/reading-progress`);
+        return this.http.get<ApiResponse<ReadingProgressResponseDto[]>>(`${this.apiUrl}/api/Books/user/${userId}/reading-history`);
       }
 
       getLastReadBook(userId: string): Observable<ApiResponse<ReadingProgressResponseDto>> {
@@ -163,4 +169,5 @@ export class BookService {
           })
         );
       }
+
 }
