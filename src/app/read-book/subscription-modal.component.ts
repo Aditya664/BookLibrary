@@ -10,38 +10,46 @@ import { ModalController } from '@ionic/angular';
         <ion-icon name="close-circle" size="large"></ion-icon>
       </ion-button>
 
-      <!-- Background overlay gradient -->
+      <!-- Background overlay blur -->
       <div class="background-overlay"></div>
 
-      <!-- Hero Image -->
-      <div class="header-images">
-        <ion-img
-          src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=800&q=80"
-        ></ion-img>
+      <!-- Main Content Wrapper -->
+      <div class="modal-content-wrapper">
+        <!-- Hero Image -->
+        <div class="header-images">
+          <ion-img
+            src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=800&q=80"
+          ></ion-img>
+        </div>
+
+        <h2 class="title">Unlimited Reading 📚</h2>
+        <p class="subtitle">Access thousands of eBooks anytime, anywhere</p>
+
+        <!-- Free Limit Exceeded Message -->
+        <div class="limit-message">
+          ⚠️ Your free limit has been exceeded. Please subscribe to continue.
+        </div>
+
+        <!-- Floating PREMIUM Card -->
+        <ion-card class="plan-card premium">
+          <ion-card-content>
+            <div class="plan-header">
+              <h3>✨ PREMIUM (Lifetime)</h3>
+              <ion-badge color="danger">60% OFF</ion-badge>
+            </div>
+            <p class="plan-price">INR 120 · Cancel Anytime</p>
+            <p class="plan-description">
+              One-time payment for lifetime access. Enjoy all ebooks without
+              limits.
+            </p>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Subscribe Button -->
+        <ion-button expand="block" class="continue-btn" (click)="subscribe()">
+          Subscribe Now
+        </ion-button>
       </div>
-
-      <h2 class="title">Unlimited Reading 📚</h2>
-      <p class="subtitle">Access thousands of eBooks anytime, anywhere</p>
-
-      <!-- Floating PREMIUM Card -->
-      <ion-card class="plan-card premium">
-        <ion-card-content>
-          <div class="plan-header">
-            <h3>✨ PREMIUM (Lifetime)</h3>
-            <ion-badge color="danger">60% OFF</ion-badge>
-          </div>
-          <p class="plan-price">INR 120 · Cancel Anytime</p>
-          <p class="plan-description">
-            One-time payment for lifetime access. Enjoy all ebooks without
-            limits.
-          </p>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- Subscribe Button -->
-      <ion-button expand="block" class="continue-btn" (click)="subscribe()">
-        Subscribe Now
-      </ion-button>
     </ion-content>
   `,
   styles: [
@@ -49,12 +57,10 @@ import { ModalController } from '@ionic/angular';
       .subscription-modal {
         position: relative;
         display: flex;
-        flex-direction: column;
+        justify-content: center;
         align-items: center;
         padding: 25px;
-        padding-top: calc(
-          25px + env(safe-area-inset-top)
-        ); /* Add safe area for status bar */
+        padding-top: calc(25px + env(safe-area-inset-top));
         background: linear-gradient(160deg, #f0f4f8, #d9e2ec);
         overflow: hidden;
       }
@@ -62,27 +68,32 @@ import { ModalController } from '@ionic/angular';
       /* Close Icon */
       .close-btn {
         position: absolute;
-        top: calc(
-          15px + env(safe-area-inset-top)
-        ); /* move down for status bar */
+        top: calc(15px + env(safe-area-inset-top));
         right: 15px;
         z-index: 10;
         color: #ff5a5f;
       }
 
+      /* Background blur overlay */
       .background-overlay {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(
-          180deg,
-          rgba(255, 255, 255, 0.6),
-          rgba(255, 255, 255, 0.3)
-        );
-        backdrop-filter: blur(8px);
+        backdrop-filter: blur(15px);
+        background: rgba(255, 255, 255, 0.25);
         z-index: 0;
+      }
+
+      .modal-content-wrapper {
+        position: relative;
+        z-index: 5;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 420px;
       }
 
       .header-images {
@@ -92,7 +103,6 @@ import { ModalController } from '@ionic/angular';
         overflow: hidden;
         box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
         position: relative;
-        z-index: 1;
       }
 
       .header-images ion-img {
@@ -111,7 +121,6 @@ import { ModalController } from '@ionic/angular';
         font-weight: 800;
         text-align: center;
         color: #111;
-        z-index: 1;
         margin-bottom: 8px;
       }
 
@@ -119,17 +128,28 @@ import { ModalController } from '@ionic/angular';
         font-size: 1.05rem;
         text-align: center;
         color: #555;
-        margin-bottom: 30px;
-        z-index: 1;
+        margin-bottom: 20px;
+      }
+
+      .limit-message {
+        width: 100%;
+        padding: 14px 18px;
+        background-color: rgba(255, 235, 180, 0.95);
+        border-left: 5px solid #ff8a00;
+        color: #333;
+        font-weight: 600;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        text-align: center;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
       }
 
       .plan-card {
-        width: 95%;
+        width: 100%;
         border-radius: 20px;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-        margin-bottom: 30px;
+        margin-bottom: 25px;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
-        z-index: 1;
       }
 
       .plan-card:hover {
@@ -175,7 +195,6 @@ import { ModalController } from '@ionic/angular';
         font-size: 1.05rem;
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
-        z-index: 1;
       }
 
       .continue-btn:active {
@@ -184,7 +203,7 @@ import { ModalController } from '@ionic/angular';
       }
 
       @media (max-width: 400px) {
-        .subscription-modal {
+        .modal-content-wrapper {
           padding: 15px;
         }
         .title {
