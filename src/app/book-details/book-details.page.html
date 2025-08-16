@@ -34,7 +34,7 @@
   <div class="uber-hero" style="margin-top: var(--total-header-height);">
     <div class="uber-hero-container">
       <div class="uber-hero-cover">
-        <ng-container *ngIf="book.image && book.image !== ''; else bookPlaceholder">
+        <ng-container *ngIf="book.image; else bookPlaceholder">
           <img
             [src]="book.image"
             [alt]="book.title"

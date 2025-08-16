@@ -32,7 +32,12 @@ const routes: Routes = [
     loadChildren: () => import('./profile/profile.module').then(m => m.ProfilePageModule),
     canActivate: [AuthGuard]
   },
-  
+  {
+    path: 'favorites',
+    loadChildren: () =>
+      import('./favorites/favorites.module').then(m => m.FavoritesModule),
+    canActivate: [AuthGuard]
+  },
   {
     path: 'tabs',
     loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule),

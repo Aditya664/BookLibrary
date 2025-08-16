@@ -68,3 +68,9 @@ export interface ApiResponse<T> {
     lastUpdated: string;
     book: BookResponse;
   }
+
+  export interface FavoriteListResponseDto {
+    id: string;
+    userId: string;
+    book: BookResponse;
+  }

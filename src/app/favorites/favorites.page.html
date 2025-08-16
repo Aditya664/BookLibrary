@@ -1,41 +1,173 @@
-<ion-header [translucent]="true" class="ion-no-border">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/home" icon="arrow-back"></ion-back-button>
-    </ion-buttons>
-    <ion-title>My Favorites</ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true" class="ion-padding">
+<ion-content [fullscreen]="true" class="uber-dashboard" [scrollY]="true" [scrollEvents]="true" (ionScroll)="onScroll($event)">
   <!-- Loading State -->
-  <div class="ion-text-center ion-padding" *ngIf="isLoading">
-    <ion-spinner name="crescent"></ion-spinner>
-    <p>Loading your favorites...</p>
-  </div>
+  <app-loader *ngIf="loading" text="Loading your favorites" subtext="Preparing your favorite books..."></app-loader>
 
-  <!-- Empty State -->
-  <div class="ion-text-center ion-padding" *ngIf="!isLoading && favorites.length === 0">
-    <div class="ion-padding">
-      <ion-icon name="bookmark" style="font-size: 4rem; color: var(--ion-color-medium);"></ion-icon>
-      <h3>No Favorites Yet</h3>
-      <ion-note>Save your favorite books to find them here later</ion-note>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="sparkles-outline"
+      refreshingSpinner="crescent"
+      pullingText="Pull down to refresh favorites ✨"
+      refreshingText="Refreshing..."
+    ></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Header -->
+  <div class="uber-header" [class.scrolled]="headerScrolled">
+    <div class="header-content">
+      <button class="back-button" (click)="goBack()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </button>
+      <h1 class="page-title" [class.visible]="headerScrolled">Favorites</h1>
+      <div class="header-actions">
+        <button
+          class="header-action-btn"
+          (click)="viewMode = viewMode === 'grid' ? 'list' : 'grid'"
+          [attr.aria-label]="viewMode === 'grid' ? 'Switch to list view' : 'Switch to grid view'"
+        >
+          <ion-icon
+            [name]="viewMode === 'grid' ? 'list-outline' : 'grid-outline'"
+          ></ion-icon>
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- Favorites List -->
-  <ion-list *ngIf="!isLoading && favorites.length > 0" lines="none">
-    <ion-item *ngFor="let book of favorites" (click)="openBookDetails(book)" detail>
-      <ion-thumbnail slot="start">
-        <img [src]="book.coverImage || 'assets/icon/default-book-cover.png'" [alt]="book.title" />
-      </ion-thumbnail>
-      <ion-label>
-        <h3>{{ book.title || 'Untitled Book' }}</h3>
-        <p>{{ book.author || 'Unknown Author' }}</p>
-      </ion-label>
-      <ion-button fill="clear" (click)="$event.stopPropagation(); removeFromFavorites(book.id, $event)">
-        <ion-icon slot="icon-only" name="bookmark"></ion-icon>
-      </ion-button>
-    </ion-item>
-  </ion-list>
+  <!-- Main Content -->
+  <div class="content-wrapper">
+
+    <!-- Books Display -->
+    <div class="books-container" [class.list-view]="viewMode === 'list'" [class.grid-view]="viewMode === 'grid'">
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="!loading && (!favoriteBooks || favoriteBooks.length === 0)">
+        <ion-icon name="bookmark-outline"></ion-icon>
+        <h3>No favorites yet</h3>
+        <p>Save your favorite books to find them here</p>
+        <ion-button fill="outline" routerLink="/tabs/tab1">Browse Books</ion-button>
+      </div>
+
+      <!-- Grid View -->
+      <div class="modern-book-grid" *ngIf="viewMode === 'grid' && favoriteBooks && favoriteBooks.length > 0">
+        <div
+          class="modern-book-card"
+          *ngFor="let book of favoriteBooks; trackBy: trackByBookId"
+          (click)="openBook(book)"
+        >
+          <div class="book-cover-container">
+            <ng-container *ngIf="book.image; else gridPlaceholder">
+              <img
+                [src]="book.image"
+                (error)="book.image = ''"
+                class="book-cover"
+                alt="{{ book.title }}"
+                loading="lazy"
+              />
+            </ng-container>
+            <ng-template #gridPlaceholder>
+              <div
+                class="book-placeholder"
+                [ngClass]="getGradientClass(book.title)"
+              >
+                <span>{{ getInitials(book.title) }}</span>
+              </div>
+            </ng-template>
+            <div class="book-overlay">
+              <div class="quick-actions">
+                <button
+                  class="quick-action-btn"
+                  (click)="removeFromFavorites(book.id.toString(), $event)"
+                >
+                  <ion-icon name="bookmark"></ion-icon>
+                </button>
+                <button
+                  class="quick-action-btn"
+                  (click)="shareBook(book, $event)"
+                >
+                  <ion-icon name="share-outline"></ion-icon>
+                </button>
+              </div>
+              <div class="rating-badge" *ngIf="book.rating">
+                <ion-icon name="star"></ion-icon>
+                <span>{{ book.rating }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="book-details">
+            <h4>{{ book.title }}</h4>
+            <p>{{ book.author }}</p>
+            <div class="book-meta">
+              <div class="rating-stars">
+                <ion-icon
+                  *ngFor="let star of [1,2,3,4,5]"
+                  [name]="star <= (book.rating || 0) ? 'star' : 'star-outline'"
+                  [class.filled]="star <= (book.rating || 0)"
+                >
+                </ion-icon>
+              </div>
+              <span class="genre-tag" *ngIf="book.genres && book.genres[0]"
+                >{{ book.genres[0].name }}</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- List View -->
+      <div class="modern-book-list" *ngIf="viewMode === 'list'">
+        <div
+          class="modern-book-list-item"
+          *ngFor="let book of favoriteBooks; trackBy: trackByBookId"
+          (click)="openBook(book)"
+        >
+          <div class="book-cover-small">
+            <ng-container *ngIf="book.image; else listPlaceholder">
+              <img [src]="book.image" [alt]="book.title" loading="lazy" />
+            </ng-container>
+            <ng-template #listPlaceholder>
+              <div
+                class="book-placeholder small"
+                [ngClass]="getGradientClass(book.title)"
+              >
+                <span>{{ getInitials(book.title) }}</span>
+              </div>
+            </ng-template>
+          </div>
+          <div class="book-info-expanded">
+            <div class="book-main-info">
+              <h4>{{ book.title }}</h4>
+              <p>by {{ book.author }}</p>
+              <div class="book-description" *ngIf="book.description">
+                {{ book.description | slice:0:120 }}{{ book.description.length >
+                120 ? '...' : '' }}
+              </div>
+            </div>
+            <div class="book-actions">
+              <div class="rating-info">
+                <div class="rating-stars">
+                  <ion-icon
+                    *ngFor="let star of [1,2,3,4,5]"
+                    [name]="star <= (book.rating || 0) ? 'star' : 'star-outline'"
+                    [class.filled]="star <= (book.rating || 0)"
+                  >
+                  </ion-icon>
+                </div>
+                <span class="rating-text">{{ book.rating || 0 }}</span>
+              </div>
+              <div class="action-buttons">
+                <button
+                  class="action-btn"
+                  (click)="removeFromFavorites(book.id.toString(), $event)"
+                >
+                  <ion-icon name="bookmark"></ion-icon>
+                </button>
+                <button class="action-btn" (click)="shareBook(book, $event)">
+                  <ion-icon name="share-outline"></ion-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-spacer"></div>
 </ion-content>

@@ -5,6 +5,7 @@ import {
   OnDestroy,
   ViewChild,
   ElementRef,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -42,6 +43,7 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
 
   // UI State
   isLoading = false;
+  bookmarked = false;
   showControls = true;
   showSettings = false;
   isRendering = false;
@@ -107,7 +109,7 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
     private platform: Platform,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
-    private alertCtrl: AlertController,
+    private cdr: ChangeDetectorRef,
     private modalCtrl: ModalController
   ) {
     this.checkPlatform();
@@ -159,6 +161,27 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
       }
     });
   }
+
+  private getFavoriteStatus() {
+    this.bookService.checkFavoriteAsync({
+      userId: TokenService.getUserId() ?? '',
+      bookId: this.bookId?.toString() ?? ''
+    }).subscribe((res: any) => {
+      debugger
+      this.bookmarked = res.data;
+      this.cdr.detectChanges();
+    });
+  }
+
+   toggleFavorite() {
+    this.bookService.toggleFavoritesAsync({
+      userId: TokenService.getUserId() ?? '',
+      bookId: this.bookId?.toString() ?? ''
+    }).subscribe(() => {
+      this.getFavoriteStatus();
+    });
+  }
+
 
   ngAfterViewInit() {
     // load pdf.js once the view is ready
@@ -446,7 +469,7 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
 
       // Load PDF content first
       await this.loadPdf();
-
+      this.getFavoriteStatus();
       // Now load reading progress after PDF is loaded
       if (this.userId) {
         await this.loadReadingProgress();
@@ -868,26 +891,11 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
   // ---------------------------
   toggleBookmark() {
     if (!this.bookId) return;
-    this.bookService
-      .addBookToFavoritesAsync({
-        bookId: this.book?.id.toString() ?? '',
-        userId: TokenService.getUserId() ?? '',
-      })
-      .subscribe(() => {
-        const index = this.bookmarks.indexOf(this.currentPage);
-        if (index > -1) {
-          this.bookmarks.splice(index, 1);
-          this.showToast('Bookmark removed');
-        } else {
-          this.bookmarks.push(this.currentPage);
-          this.bookmarks.sort((a, b) => a - b);
-          this.showToast('Page bookmarked');
-        }
-      });
+    this.toggleFavorite();
   }
 
   isBookmarked(): boolean {
-    return this.bookId ? this.bookmarks.includes(this.currentPage) : false;
+    return this.bookmarked;
   }
 
   goToBookmark(pageNum: number) {

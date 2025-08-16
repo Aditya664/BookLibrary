@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { catchError, map, Observable, of } from 'rxjs';
-import { ApiResponse, BookResponse, GenreResponseWithBooks, FavoriteRequestDto, FavoriteResponseDto, ReadingProgressRequestDto, ReadingProgressResponseDto } from '../Model/ApiResponse';
+import { ApiResponse, BookResponse, GenreResponseWithBooks, FavoriteRequestDto, FavoriteResponseDto, ReadingProgressRequestDto, ReadingProgressResponseDto, FavoriteListResponseDto } from '../Model/ApiResponse';
 
 export interface SearchParams {
   query?: string;
@@ -65,12 +65,16 @@ export class BookService {
         return this.http.get<ApiResponse<BookResponse[]>>(`${this.apiUrl}/api/Books/genre/${genreId}`);
       }
 
-      addBookToFavoritesAsync(request: FavoriteRequestDto): Observable<ApiResponse<FavoriteResponseDto>> {
+      toggleFavoritesAsync(request: FavoriteRequestDto): Observable<ApiResponse<FavoriteResponseDto>> {
         return this.http.post<ApiResponse<FavoriteResponseDto>>(`${this.apiUrl}/api/Books/toggleFavorites`, request);
       }
 
-      getUserFavoritesAsync(userId: string): Observable<ApiResponse<FavoriteResponseDto[]>> {
-        return this.http.get<ApiResponse<FavoriteResponseDto[]>>(`${this.apiUrl}/api/Books/user/${userId}/favorites`);
+      checkFavoriteAsync(request: FavoriteRequestDto): Observable<ApiResponse<boolean>> {
+        return this.http.post<ApiResponse<boolean>>(`${this.apiUrl}/api/Books/checkFavorites`, request);
+      }
+
+      getUserFavoritesAsync(userId: string): Observable<ApiResponse<FavoriteListResponseDto[]>> {
+        return this.http.get<ApiResponse<FavoriteListResponseDto[]>>(`${this.apiUrl}/api/Books/user/${userId}/favorites`);
       }
 
       removeFromFavorites(userId: string, bookId: string): Observable<ApiResponse<boolean>> {

@@ -1,10 +1,12 @@
-import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
-import { RouterModule } from '@angular/router';
+
+import { IonicModule, ModalController } from '@ionic/angular';
+
 import { FavoritesPage } from './favorites.page';
 import { FavoritesRoutingModule } from './favorites-routing.module';
+import { LoaderComponent } from '../shared/components/loader/loader.component';
 
 @NgModule({
   imports: [
@@ -12,8 +14,14 @@ import { FavoritesRoutingModule } from './favorites-routing.module';
     FormsModule,
     IonicModule,
     FavoritesRoutingModule,
+    LoaderComponent
   ],
-  declarations: [FavoritesPage],
+  declarations: [
+    FavoritesPage,
+  ],
+  providers: [
+    ModalController
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class FavoritesModule {}
