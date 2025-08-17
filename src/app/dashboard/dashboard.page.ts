@@ -45,6 +45,7 @@ export class DashboardPage implements OnInit {
   recentBooks: BookResponse[] = [];
   allBooks: BookResponse[] = [];
   continueReading: ReadingProgressResponseDto | null = null;
+  completedBooks: ReadingProgressResponseDto[] = [];
   isLoading = false;
   loggedInUserName = localStorage.getItem('fullName');
   userId: string | null = null;
@@ -333,6 +334,12 @@ export class DashboardPage implements OnInit {
           return of({ data: [] as BookResponse[] });
         })
       ),
+      completedBooks : this.bookService.getUserReadingProgress(this.userId ?? '').pipe(
+        catchError((error) => {
+          console.error('Error loading completed books:', error);
+          return of({ data: [] as ReadingProgressResponseDto[] });
+        })
+      ),
       genres: this.bookService.getAllGenres().pipe(
         catchError((error) => {
           console.error('Error loading genres:', error);
@@ -364,6 +371,7 @@ export class DashboardPage implements OnInit {
         this.recentBooks = responses.recentBooks.data || [];
         this.allBooks = responses.allBooks.data || [];
         this.continueReading = responses.continueReading?.data || null;
+        this.completedBooks = responses.completedBooks.data.filter(p => p.percentage >= 100) || [];
         this.isLoading = false;
         this.generateTopBooksByLanguage();
       },
