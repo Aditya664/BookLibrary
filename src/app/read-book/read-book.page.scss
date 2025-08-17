@@ -20,6 +20,25 @@
       padding: 0;
     }
   }
+  
+  /* Remove all focus outlines and borders globally */
+  * {
+    &:focus, &:focus-visible {
+      outline: none !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+  }
+  
+  /* Specifically target ion-button focus states */
+  ion-button {
+    &:focus, &:focus-visible, &.ion-focused {
+      --border-width: 0 !important;
+      --box-shadow: none !important;
+      outline: none !important;
+      border: none !important;
+    }
+  }
 }
 
 /* Modern Header */
@@ -47,9 +66,13 @@
       --background: transparent;
       --background-hover: var(--reader-control-hover);
       --background-activated: var(--reader-control-hover);
+      --border-width: 0;
+      --box-shadow: none;
       min-width: 40px;
       height: 40px;
       margin: 0 2px;
+      border: none !important;
+      outline: none !important;
       
       ion-icon {
         color: var(--reader-text);
@@ -253,11 +276,15 @@
       --color: var(--reader-text);
       --color-hover: var(--reader-text);
       --color-activated: var(--reader-text);
+      --border-width: 0;
+      --box-shadow: none;
       min-width: 40px;
       height: 40px;
       margin: 0 2px;
       flex-shrink: 0;
       transition: all 0.2s ease;
+      border: none !important;
+      outline: none !important;
       
       ion-icon {
         font-size: 1.2em;

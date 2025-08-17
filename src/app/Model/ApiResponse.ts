@@ -27,6 +27,7 @@ export interface ApiResponse<T> {
     reviews: ReviewResponse[];
     pdfFile?: Uint8Array | string; // Can be either Uint8Array or base64 string from API
     pdfFileName?: string;
+    totalPages?: number; // Total pages in the PDF
     createdAt: string; // ISO string when received from API
   }
   

@@ -2,7 +2,8 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { BookService } from '../services/book.service';
 import { TokenService } from '../services/token.service';
 import { FavoriteResponseDto, ReadingProgressResponseDto } from '../Model/ApiResponse';
-import { NavController, AlertController, ToastController } from '@ionic/angular';
+import { NavController, ToastController } from '@ionic/angular';
+import { AlertService } from '../services/alert.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -33,10 +34,11 @@ export class ProfilePage implements OnInit {
     name: 'Book Lover',
     email: 'user@booklibrary.com',
     joinDate: new Date('2024-01-01'),
-    avatar: ''
+    avatar: '',
+    bio: 'Passionate reader and book enthusiast'
   };
   readingGoal = {
-    target: parseInt(this.readingGole ?? '10'),
+    targetBooks: parseInt(this.readingGole ?? '10'),
     current: 0,
     year: new Date().getFullYear()
   };
@@ -49,7 +51,7 @@ export class ProfilePage implements OnInit {
   constructor(
     private bookService: BookService,
     private navCtrl: NavController,
-    private alertController: AlertController,
+    private alertService: AlertService,
     private toastController: ToastController,
     private router: Router
   ) { }
@@ -149,75 +151,59 @@ export class ProfilePage implements OnInit {
   }
 
   getProgressPercentage(): number {
-    return Math.min((this.readingGoal.current / this.readingGoal.target) * 100, 100);
+    return Math.min((this.readingGoal.current / this.readingGoal.targetBooks) * 100, 100);
   }
 
   async updateReadingGoal() {
-    const alert = await this.alertController.create({
-      header: 'Update Reading Goal',
-      message: `Set your reading goal for ${this.readingGoal.year}`,
-      inputs: [
-        {
-          name: 'target',
-          type: 'number',
-          placeholder: 'Number of books',
-          value: this.readingGoal.target
-        }
-      ],
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
-        {
-          text: 'Update',
-          handler: (data) => {
-            if (data.target && data.target > 0) {
-              this.readingGole = data.target;
-              localStorage.setItem('readingGole', this.readingGole?.toString() ?? '0');
-              this.readingGoal.target = parseInt(this.readingGole ?? '0');
-              this.showToast('Reading goal updated!');
-            }
-          }
-        }
-      ]
-    });
-    await alert.present();
+    const result = await this.alertService.showInput(
+      `Set your reading goal for ${this.readingGoal.year}`,
+      'Update Reading Goal',
+      [{
+        name: 'goal',
+        type: 'number',
+        placeholder: 'Number of books',
+        value: this.readingGoal.targetBooks.toString()
+      }]
+    );
+    
+    if (result && result.goal && result.goal > 0) {
+      this.readingGoal.targetBooks = parseInt(result.goal);
+      this.showToast('Reading goal updated successfully!');
+    }
   }
 
   async editProfile() {
-    const alert = await this.alertController.create({
-      header: 'Edit Profile',
-      inputs: [
+    const result = await this.alertService.showInput(
+      'Update your profile information',
+      'Edit Profile',
+      [
         {
           name: 'name',
           type: 'text',
-          placeholder: 'Your name',
+          placeholder: 'Full Name',
           value: this.userProfile.name
         },
         {
           name: 'email',
           type: 'email',
-          placeholder: 'Your email',
+          placeholder: 'Email',
           value: this.userProfile.email
-        }
-      ],
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
         },
         {
-          text: 'Save',
-          handler: (data) => {
-            if (data.name) this.userProfile.name = data.name;
-            if (data.email) this.userProfile.email = data.email;
-            this.showToast('Profile updated!');
-          }
+          name: 'bio',
+          type: 'textarea',
+          placeholder: 'Bio',
+          value: this.userProfile.bio
         }
       ]
-    });
-    await alert.present();
+    );
+    
+    if (result && result.name) {
+      this.userProfile.name = result.name;
+      this.userProfile.email = result.email;
+      this.userProfile.bio = result.bio;
+      this.showToast('Profile updated successfully!');
+    }
   }
 
   togglePreference(key: keyof typeof this.preferences) {
@@ -227,24 +213,18 @@ export class ProfilePage implements OnInit {
   }
 
   async logout() {
-    const alert = await this.alertController.create({
-      header: 'Logout',
-      message: 'Are you sure you want to logout?',
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
-        {
-          text: 'Logout',
-          handler: () => {
-            TokenService.clearToken();
-            this.router.navigate(['/login']);
-          }
-        }
-      ]
-    });
-    await alert.present();
+    const confirmed = await this.alertService.showConfirm(
+      'Are you sure you want to logout?',
+      'Logout',
+      'Logout',
+      'Cancel'
+    );
+    
+    if (confirmed) {
+      // Clear user data and navigate to login
+      TokenService.clearToken();
+      this.router.navigate(['/login']);
+    }
   }
 
   async showToast(message: string) {

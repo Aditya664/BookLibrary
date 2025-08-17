@@ -3,6 +3,52 @@
  * ----------------------------------------------------------------------------
  * Enhanced global styles for modern UI experience
  */
+@import "theme/variables.scss";
+@import './theme/alert-styles.scss';
+
+/* Global Alert Border Removal - Override Ionic defaults */
+ion-alert,
+ion-toast,
+.alert-wrapper,
+.alert-container,
+.alert-button-group,
+.alert-button,
+.alert-input-wrapper,
+.alert-input {
+  outline: none !important;
+  
+  &:focus,
+  &:focus-visible,
+  &.ion-focused {
+    outline: none !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Specifically target alert buttons */
+.alert-button {
+  --border-width: 0 !important;
+  --box-shadow: none !important;
+  
+  &.alert-button-role-cancel,
+  &.alert-button-role-destructive {
+    --border-width: 0 !important;
+    --box-shadow: none !important;
+  }
+}
+
+/* Alert inputs */
+.alert-input {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  
+  &:focus {
+    border-color: #9ca3af !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
 
 /* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";

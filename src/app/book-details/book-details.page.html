@@ -57,11 +57,11 @@
           <div class="uber-book-info">
             <div class="info-item">
               <ion-icon name="document-text-outline"></ion-icon>
-              <span>{{ getEstimatedPages() }} pages</span>
+              <span>{{ getActualPages() }} pages</span>
             </div>
             <div class="info-item">
               <ion-icon name="time-outline"></ion-icon>
-              <span>{{ getReadingTime() }} min read</span>
+              <span>{{ getFormattedReadingTime() }} read</span>
             </div>
 
             <div class="info-item" *ngIf="book.genres && book.genres.length > 0">

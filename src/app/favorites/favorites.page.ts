@@ -1,8 +1,10 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { BookService } from '../services/book.service';
 import { TokenService } from '../services/token.service';
+import { FavoriteResponseDto } from '../Model/ApiResponse';
+import { NavController, ToastController, LoadingController } from '@ionic/angular';
+import { AlertService } from '../services/alert.service';
 import { Router } from '@angular/router';
-import { AlertController, LoadingController, NavController, ToastController } from '@ionic/angular';
 import { map, Subject, Subscription } from 'rxjs';
 import { ApiResponse, BookResponse, FavoriteListResponseDto } from '../Model/ApiResponse';
 
@@ -34,11 +36,11 @@ export class FavoritesPage implements OnInit {
 
   constructor(
     private bookService: BookService,
-    private router: Router,
     private navCtrl: NavController,
+    private alertService: AlertService,
+    private toastController: ToastController,
     private loadingCtrl: LoadingController,
-    private alertController: AlertController,
-    private toastController: ToastController
+    private router: Router
   ) {
     this.userId = TokenService.getUserId() || '';
   }
@@ -135,69 +137,37 @@ export class FavoritesPage implements OnInit {
   async removeFromFavorites(bookId: string, event: Event) {
     event.stopPropagation();
 
-    const alert = await this.alertController.create({
-      header: 'Remove from Favorites',
-      message: 'Are you sure you want to remove this book from your favorites?',
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel',
-          cssClass: 'secondary'
-        },
-        {
-          text: 'Remove',
-          handler: async () => {
-            const loading = await this.loadingCtrl.create({
-              message: 'Removing from favorites...',
-              spinner: 'crescent'
-            });
-            await loading.present();
+    const confirmed = await this.alertService.showConfirm(
+      'Are you sure you want to remove this book from your favorites?',
+      'Remove from Favorites',
+      'Remove',
+      'Cancel'
+    );
 
-            try {
-              // Call backend API to toggle favorites (remove from favorites)
-              await this.bookService.toggleFavoritesAsync({
-                userId: this.userId,
-                bookId: bookId
-              }).toPromise().then(() => this.loadFavorites()).catch((error)=>console.log(error)
-              );
-              
-              // Show success toast
-              const toast = await this.toastController.create({
-                message: 'Removed from favorites',
-                duration: 2000,
-                position: 'bottom',
-                color: 'success',
-                buttons: [{
-                  icon: 'close',
-                  role: 'cancel'
-                }]
-              });
-              await toast.present();
-              
-            } catch (error) {
-              console.error('Error removing from favorites:', error);
-              
-              // Show error toast
-              const errorToast = await this.toastController.create({
-                message: 'Failed to remove from favorites. Please try again.',
-                duration: 3000,
-                position: 'bottom',
-                color: 'danger',
-                buttons: [{
-                  icon: 'close',
-                  role: 'cancel'
-                }]
-              });
-              await errorToast.present();
-            } finally {
-              await loading.dismiss();
-            }
-          }
-        }
-      ]
-    });
+    if (confirmed) {
+      const loading = await this.loadingCtrl.create({
+        message: 'Removing from favorites...',
+        spinner: 'crescent'
+      });
+      await loading.present();
 
-    await alert.present();
+      try {
+        // Call backend API to toggle favorites (remove from favorites)
+        await this.bookService.toggleFavoritesAsync({
+          userId: this.userId,
+          bookId: bookId
+        }).toPromise().then(() => this.loadFavorites()).catch((error)=>console.log(error)
+        );
+        
+        await this.alertService.showToast('Removed from favorites', 'success');
+        
+      } catch (error) {
+        console.error('Error removing from favorites:', error);
+        await this.alertService.showError('Failed to remove from favorites');
+      } finally {
+        await loading.dismiss();
+      }
+    }
   }
 
   async shareBook(book: any, event: Event) {

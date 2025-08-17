@@ -1,28 +1,29 @@
 import {
   Component,
   OnInit,
-  AfterViewInit,
-  OnDestroy,
   ViewChild,
   ElementRef,
+  OnDestroy,
   ChangeDetectorRef,
+  HostListener,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
-  NavController,
   Platform,
   LoadingController,
   ToastController,
-  AlertController,
   ModalController,
 } from '@ionic/angular';
 import { BookService } from '../services/book.service';
+import { AlertService } from '../services/alert.service';
 import { TokenService } from '../services/token.service';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { ReadingProgressRequestDto } from '../Model/ApiResponse';
 import { Subscription, Subject } from 'rxjs';
+import { NavController } from '@ionic/angular';
 import { SubscriptionModalComponent } from './subscription-modal.component';
+
 // NOTE: using window.pdfjsLib dynamic loader approach to avoid bundling issues.
 // Make sure pdfjs-dist is available via npm or CDN in your environment.
 
@@ -32,7 +33,7 @@ import { SubscriptionModalComponent } from './subscription-modal.component';
   styleUrls: ['./read-book.page.scss'],
   standalone: false,
 })
-export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
+export class ReadBookPage implements OnInit, OnDestroy {
   @ViewChild('pdfCanvas', { static: false })
   pdfCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('pdfContainer', { static: false })
@@ -109,8 +110,9 @@ export class ReadBookPage implements OnInit, AfterViewInit, OnDestroy {
     private platform: Platform,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
-    private cdr: ChangeDetectorRef,
-    private modalCtrl: ModalController
+    private alertService: AlertService,
+    private modalCtrl: ModalController,
+    private cdr: ChangeDetectorRef
   ) {
     this.checkPlatform();
   }

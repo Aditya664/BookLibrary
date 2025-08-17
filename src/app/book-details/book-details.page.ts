@@ -8,13 +8,13 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
-  AlertController,
   LoadingController,
   ModalController,
   NavController,
   Platform,
 } from '@ionic/angular';
 import { BookService } from '../services/book.service';
+import { AlertService } from '../services/alert.service';
 import { Share } from '@capacitor/share';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -59,6 +59,8 @@ export class BookDetailsPage implements OnInit {
   lastScrollTop = 0;
   bookId!: string;
   isLoading = false;
+  isLoadingPageCount = false;
+  private static pdfPageCache = new Map<string, number>();
 
   constructor(
     private route: ActivatedRoute,
@@ -66,7 +68,7 @@ export class BookDetailsPage implements OnInit {
     private bookService: BookService,
     private navCtrl: NavController,
     private loadingCtrl: LoadingController,
-    private alertCtrl: AlertController,
+    private alertService: AlertService,
     private modalCtrl: ModalController,
     private cdr: ChangeDetectorRef
   ) {}
@@ -155,6 +157,8 @@ export class BookDetailsPage implements OnInit {
               this.book.reviews = [];
             }
             this.getFavoriteStatus();
+            
+            // Don't load PDF page count immediately - let getActualPages() handle it asynchronously
           }
           this.isLoading = false;
         }),
@@ -184,21 +188,11 @@ export class BookDetailsPage implements OnInit {
   }
 
   async showSuccessAlert(message: string) {
-    const alert = await this.alertCtrl.create({
-      header: 'Success',
-      message,
-      buttons: ['OK'],
-    });
-    await alert.present();
+    await this.alertService.showSuccess(message);
   }
 
   async showErrorAlert(message: string) {
-    const alert = await this.alertCtrl.create({
-      header: 'Error',
-      message,
-      buttons: ['OK'],
-    });
-    await alert.present();
+    await this.alertService.showError(message);
   }
 
   getInitials(title: string): string {
@@ -249,16 +243,160 @@ export class BookDetailsPage implements OnInit {
       });
   }
 
-  getEstimatedPages(): number {
-    // Estimate pages based on title length (simple estimation without API)
+  getActualPages(): number {
+    // Use actual PDF pages if available
+    if (this.book?.totalPages && this.book.totalPages > 0) {
+      return this.book.totalPages;
+    }
+    
+    // Check cache first
+    if (this.book?.id) {
+      const cached = BookDetailsPage.pdfPageCache.get(this.book.id.toString());
+      if (cached) {
+        this.book.totalPages = cached;
+        return cached;
+      }
+    }
+    
+    // Load PDF page count asynchronously (non-blocking)
+    if (this.book?.pdfFile && !this.book.totalPages && !this.isLoadingPageCount) {
+      this.loadPdfPageCountAsync();
+    }
+    
+    // Return estimation immediately while loading
     if (!this.book?.title) return 250;
     const titleLength = this.book.title.length;
-    return Math.round(200 + titleLength * 10); // Base 200 + title factor
+    return Math.round(200 + titleLength * 10);
+  }
+
+  private loadPdfPageCountAsync(): void {
+    if (!this.book?.pdfFile || this.book.totalPages || this.isLoadingPageCount) return;
+    
+    this.isLoadingPageCount = true;
+    
+    // Use setTimeout to make it non-blocking
+    setTimeout(async () => {
+      try {
+        await this.loadPdfPageCount();
+      } catch (error) {
+        console.error('Error loading PDF page count:', error);
+      } finally {
+        this.isLoadingPageCount = false;
+      }
+    }, 100);
+  }
+
+  private async loadPdfPageCount(): Promise<void> {
+    if (!this.book?.pdfFile || this.book.totalPages) return;
+
+    try {
+      // Load PDF.js if not already loaded
+      if (!(window as any).pdfjsLib) {
+        await this.loadPdfJs();
+      }
+
+      // Only load first few pages to get metadata quickly
+      let pdfData: Uint8Array;
+      const content = this.book.pdfFile;
+
+      if (typeof content === 'string') {
+        let base64 = content;
+        if (base64.includes(',')) base64 = base64.split(',')[1];
+        const binary = atob(base64);
+        const arr = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+        pdfData = arr;
+      } else if (content instanceof ArrayBuffer) {
+        pdfData = new Uint8Array(content);
+      } else if (content instanceof Uint8Array) {
+        pdfData = content;
+      } else {
+        throw new Error('Unsupported PDF format');
+      }
+
+      const pdfjs = (window as any).pdfjsLib;
+      const loadingTask = pdfjs.getDocument({
+        data: pdfData,
+        disableAutoFetch: true, // Don't fetch all pages
+        disableRange: true,     // Don't use range requests
+        stopAtErrors: true      // Stop on first error
+      });
+      
+      const pdfDoc = await loadingTask.promise;
+      const pageCount = pdfDoc.numPages || 0;
+      
+      // Cache the result
+      if (this.book?.id) {
+        BookDetailsPage.pdfPageCache.set(this.book.id.toString(), pageCount);
+      }
+      
+      // Update book with actual page count
+      this.book.totalPages = pageCount;
+      console.log(`PDF metadata loaded: ${pageCount} pages`);
+      
+      // Cleanup immediately
+      await pdfDoc.cleanup();
+      await pdfDoc.destroy();
+      
+      // Trigger change detection to update UI
+      this.cdr.detectChanges();
+    } catch (error) {
+      console.error('Error loading PDF page count:', error);
+      // Silently fail - will use estimation instead
+    }
+  }
+
+  private async loadPdfJs(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      if ((window as any).pdfjsLib) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.type = 'module';
+      script.textContent = `
+        import * as pdfjsLib from '../../assets/pdf.min.mjs';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '../../assets/pdf.worker.mjs';
+        window.pdfjsLib = pdfjsLib;
+        window.dispatchEvent(new CustomEvent('pdfjsLoaded'));
+      `;
+
+      const onLoad = () => {
+        setTimeout(() => {
+          if ((window as any).pdfjsLib) {
+            resolve();
+          } else {
+            reject(new Error('PDF.js failed to load'));
+          }
+        }, 100);
+      };
+
+      script.onerror = () => reject(new Error('Failed to load PDF.js'));
+      window.addEventListener('pdfjsLoaded', onLoad, { once: true });
+      document.head.appendChild(script);
+    });
   }
 
   getReadingTime(): number {
-    // Estimate reading time based on estimated pages (average 2 minutes per page)
-    return Math.round(this.getEstimatedPages() * 2);
+    // Calculate reading time: average 2 minutes per page for technical books, 1.5 for fiction
+    const pages = this.getActualPages();
+    const minutesPerPage = this.book?.genres?.some(g => 
+      ['Technical', 'Science', 'Education', 'Reference'].includes(g.name)
+    ) ? 2.5 : 1.8;
+    
+    return Math.round(pages * minutesPerPage);
+  }
+
+  getFormattedReadingTime(): string {
+    const totalMinutes = this.getReadingTime();
+    if (totalMinutes < 60) {
+      return `${totalMinutes} min`;
+    } else {
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+    }
   }
 
   seeAllBooks() {
