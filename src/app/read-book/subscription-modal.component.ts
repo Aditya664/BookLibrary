@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
+declare var Razorpay: any; 
+
+
 @Component({
   selector: 'app-subscription-modal',
   template: `
@@ -229,10 +232,37 @@ import { ModalController } from '@ionic/angular';
 })
 export class SubscriptionModalComponent {
   constructor(private modalCtrl: ModalController) {}
-
   subscribe() {
-    console.log('User subscribed!');
-    this.modalCtrl.dismiss();
+    const options: any = {
+      key: 'rzp_test_R6nLUPJNsygCR0', 
+      amount: 120 * 100,
+      currency: 'INR',
+      name: 'BookLib Premium',
+      description: 'Lifetime Access Subscription',
+      image: 'assets/icon.png',
+      handler: (response: any) => {
+        console.log('Payment Success:', response);
+        alert('Payment Successful ✅');
+        this.modalCtrl.dismiss();
+      },
+      prefill: {
+        name: 'Test User',
+        email: 'test@example.com',
+        contact: '9876543210',
+      },
+      theme: {
+        color: '#ff8a00',
+      },
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+
+    // Handle payment failure
+    rzp.on('payment.failed', (response: any) => {
+      console.error('Payment Failed:', response.error);
+      alert('Payment Failed ❌');
+    });
   }
 
   closeModal() {
