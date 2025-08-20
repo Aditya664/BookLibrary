@@ -31,7 +31,7 @@ export class LoginPage {
     private nav:NavController
   ) {
     this.loginForm = this.fb.group({
-      username: ['', [Validators.required]],
+      email: ['', [Validators.required]],
       password: ['', Validators.required],
     });
   }
@@ -48,7 +48,7 @@ export class LoginPage {
         
         if (response.success) {
           this.presentToast(response.message || 'Login successful!', 'success');
-          localStorage.setItem('token', response.data.jwtToken);
+          localStorage.setItem('auth_token', response.data.jwtToken);
           localStorage.setItem('fullName', TokenService.getFullName() ?? '');
           this.nav.navigateRoot('/tabs', { replaceUrl: true });
         } else {
@@ -71,7 +71,6 @@ export class LoginPage {
   // Handle forgot password flow
   forgotPassword() {
     this.presentToast('Contact Admin.', 'warning');
-    // TODO: Implement forgot password functionality
   }
   
   // Social login methods

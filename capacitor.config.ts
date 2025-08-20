@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.adbooklib.app',
-  appName: 'BookLibrary',
+  appId: 'com.booktree.app',
+  appName: 'Book Tree',
   webDir: 'www',
   server: {
     cleartext: true,
@@ -13,6 +13,15 @@ const config: CapacitorConfig = {
       overlaysWebView: false,
       style: "DARK",
       backgroundColor: "#ffffffff",
+    },
+    SplashScreen: {
+      launchShowDuration: 2000,
+      backgroundColor: "#A34C04",
+      showSpinner: false,
+      androidSpinnerStyle: "small",
+      iosSpinnerStyle: "small",
+      splashFullScreen: true,
+      splashImmersive: true,
     },
   },
 };

@@ -71,44 +71,67 @@
 
     .app-name {
       margin: 0;
-      font-size: 1.4rem;
+      font-size: 1.5rem;
       font-weight: 800;
-      letter-spacing: -0.4px;
-      color: #000000;
+      letter-spacing: -0.5px;
+      color: #2d3748;
       display: flex;
       align-items: center;
       line-height: 1.1;
       position: relative;
-      padding-left: 12px;
+      padding-left: 16px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       
       &::before {
-        content: '';
+        content: '🌳';
         position: absolute;
         left: 0;
         top: 50%;
         transform: translateY(-50%);
-        width: 3px;
-        height: 20px;
-        background: #00d4aa;
-        border-radius: 3px;
+        font-size: 1.2rem;
         transition: all 0.3s ease;
+        filter: drop-shadow(0 2px 4px rgba(34, 197, 94, 0.2));
       }
       
-      span {
-        color: #00d4aa;
-        font-weight: 800;
-        margin-left: 2px;
+      .tree-text {
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 900;
+        margin-left: 3px;
         transition: all 0.3s ease;
+        text-shadow: 0 2px 4px rgba(34, 197, 94, 0.1);
+        position: relative;
+        
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: -2px;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: linear-gradient(90deg, transparent 0%, #22c55e 50%, transparent 100%);
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
       }
 
       &:hover {
-        span {
-          color: #00b8a0;
+        .tree-text {
+          background: linear-gradient(135deg, #16a34a 0%, #15803d 50%, #166534 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          transform: scale(1.02);
+          
+          &::after {
+            opacity: 1;
+          }
         }
+        
         &::before {
-          background: #00b8a0;
-          height: 22px;
+          transform: translateY(-50%) scale(1.1) rotate(5deg);
         }
       }
     }

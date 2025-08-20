@@ -61,6 +61,12 @@ export class BookService {
         return this.http.get<ApiResponse<BookResponse>>(`${this.apiUrl}/api/Books/${id}`);
       }
 
+      getBookPdf(id: string): Observable<ApiResponse<Blob>> {
+        return this.http.get<ApiResponse<Blob>>(`${this.apiUrl}/api/Books/${id}/pdf`, {
+          responseType: 'blob' as 'json' 
+        });
+      }
+      
       getBooksByGenreAsync(genreId: number): Observable<ApiResponse<BookResponse[]>> {
         return this.http.get<ApiResponse<BookResponse[]>>(`${this.apiUrl}/api/Books/genre/${genreId}`);
       }

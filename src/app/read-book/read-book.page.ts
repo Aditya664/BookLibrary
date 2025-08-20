@@ -19,8 +19,8 @@ import { AlertService } from '../services/alert.service';
 import { TokenService } from '../services/token.service';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
-import { ReadingProgressRequestDto } from '../Model/ApiResponse';
-import { Subscription, Subject } from 'rxjs';
+import { ApiResponse, ReadingProgressRequestDto } from '../Model/ApiResponse';
+import { Subscription, Subject, map, catchError, of } from 'rxjs';
 import { NavController } from '@ionic/angular';
 import { SubscriptionModalComponent } from './subscription-modal.component';
 
@@ -101,6 +101,7 @@ export class ReadBookPage implements OnInit, OnDestroy {
   // store cleanup functions
   private pdfjsLoaded = false;
   private workerVersion = '5.4.54'; // change if you change CDN version
+  pdfFile:string | Uint32Array = "";
 
   constructor(
     private route: ActivatedRoute,
@@ -141,6 +142,7 @@ export class ReadBookPage implements OnInit, OnDestroy {
       const id = params.get('id');
       if (id) {
         this.bookId = id;
+        this.loadBookPdf(this.bookId);
         this.bookService
           .checkUsage(TokenService.getUserId() ?? '')
           .subscribe((res: any) => {
@@ -484,8 +486,56 @@ export class ReadBookPage implements OnInit, OnDestroy {
     }
   }
 
+  arrayBufferToBase64(buffer: ArrayBuffer): string {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const chunkSize = 0x8000; // 32 KB per chunk (safe)
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, i + chunkSize);
+      binary += String.fromCharCode.apply(null, chunk as unknown as number[]);
+    }
+    return btoa(binary);
+  }
+
+  
+  async loadBookPdf(id: string) {
+    this.isLoading = true;
+    try {
+      const response = await fetch(`http://freeelib.runasp.net/api/Books/${id}/pdf`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${TokenService.getToken()}`
+        }
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed with status ${response.status}`);
+      }
+      const arrayBuffer = await response.arrayBuffer();
+      let pdfBytes = new Uint8Array(arrayBuffer);
+      let paddedBuffer: ArrayBuffer;
+  
+      if (pdfBytes.byteLength % 4 !== 0) {
+        const paddedLength = Math.ceil(pdfBytes.byteLength / 4) * 4;
+        const padded = new Uint8Array(paddedLength);
+        padded.set(pdfBytes);
+        paddedBuffer = padded.buffer;
+      } else {
+        paddedBuffer = pdfBytes.buffer;
+      }
+      const pdfUint32 = new Uint32Array(paddedBuffer);
+      this.pdfFile = pdfUint32; 
+    } catch (error) {
+      console.error('Error streaming PDF:', error);
+    } finally {
+      this.isLoading = false;
+    }
+  }
+  
+
+
   async loadPdf(): Promise<void> {
-    if (!this.book?.pdfFile) {
+    if (!this.pdfFile) {
       this.showToast('No PDF content available for this book');
       throw new Error('No PDF content');
     }
@@ -505,7 +555,7 @@ export class ReadBookPage implements OnInit, OnDestroy {
     try {
       // Prepare pdf data (base64 or ArrayBuffer/Uint8Array)
       let pdfData: Uint8Array;
-      const content = this.book.pdfFile;
+      const content = this.pdfFile;
 
       if (typeof content === 'string') {
         // handle potential data URL
@@ -519,6 +569,9 @@ export class ReadBookPage implements OnInit, OnDestroy {
         pdfData = new Uint8Array(content);
       } else if (content instanceof Uint8Array) {
         pdfData = content;
+      } else if (content instanceof Uint32Array) {
+        const buffer = content.buffer.slice(content.byteOffset, content.byteOffset + content.byteLength);
+        pdfData = new Uint8Array(buffer);
       } else {
         throw new Error('Unsupported PDF format');
       }
