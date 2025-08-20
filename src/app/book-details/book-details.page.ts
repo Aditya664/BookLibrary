@@ -235,10 +235,10 @@ export class BookDetailsPage implements OnInit {
   async shareBook() {
     try {
       await Share.share({
-        title: this.book?.title,
-        text: `Check out "${this.book?.title}" by ${this.book?.author}`,
-        url: window.location.href,
-        dialogTitle: 'Share this book',
+        title: `📖 ${this.book?.title} - Book Tree`,
+        text: `🌟 I just discovered "${this.book?.title}" by ${this.book?.author} on Book Tree! 📚 This amazing book is part of my reading journey. Join me and thousands of other readers exploring incredible stories and knowledge. 🌳✨ Download Book Tree and start your own reading adventure!`,
+        url: 'https://aditya664.github.io/BookTreeLanding/',
+        dialogTitle: 'Share this amazing book',
       });
     } catch (error) {
       console.error('Error sharing book:', error);

@@ -5,6 +5,7 @@ import { FavoriteResponseDto, ReadingProgressResponseDto } from '../Model/ApiRes
 import { NavController, ToastController } from '@ionic/angular';
 import { AlertService } from '../services/alert.service';
 import { Router } from '@angular/router';
+import { Share } from '@capacitor/share';
 
 @Component({
   selector: 'app-profile',
@@ -253,6 +254,35 @@ export class ProfilePage implements OnInit {
   seeAllBooks() {
     this.navCtrl.navigateForward('/see-all-books');
   }
+
+  async shareApp() {
+    try {
+      await Share.share({
+        title: 'Book Tree 🌳 - Transform Your Reading Journey',
+        text: '📚 Discover thousands of amazing books, track your reading progress, and grow your personal library with Book Tree! Join the reading revolution and cultivate your love for books. 🌱✨',
+        url: 'https://aditya664.github.io/BookTreeLanding/',
+        dialogTitle: 'Share Book Tree App',
+      });
+    } catch (error) {
+      console.error('Error sharing app:', error);
+      // Fallback for web or if native sharing fails
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Book Tree 🌳 - Transform Your Reading Journey',
+            text: '📚 Discover thousands of amazing books, track your reading progress, and grow your personal library with Book Tree! Join the reading revolution and cultivate your love for books. 🌱✨',
+            url: 'https://aditya664.github.io/BookTreeLanding/'
+          });
+        } catch (webError) {
+          console.error('Web share also failed:', webError);
+          this.showToast('Sharing not supported on this device');
+        }
+      } else {
+        this.showToast('Sharing not supported on this device');
+      }
+    }
+  }
+
 
   // Handle scroll events for header show/hide (exact match to book details)
   onScroll(event: any) {
