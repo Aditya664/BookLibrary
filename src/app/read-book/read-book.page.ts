@@ -101,7 +101,7 @@ export class ReadBookPage implements OnInit, OnDestroy {
   // store cleanup functions
   private pdfjsLoaded = false;
   private workerVersion = '5.4.54'; // change if you change CDN version
-  pdfFile:string | Uint32Array = "";
+  pdfFile: string | Uint32Array = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -142,7 +142,6 @@ export class ReadBookPage implements OnInit, OnDestroy {
       const id = params.get('id');
       if (id) {
         this.bookId = id;
-        this.loadBookPdf(this.bookId);
         this.bookService
           .checkUsage(TokenService.getUserId() ?? '')
           .subscribe((res: any) => {
@@ -167,25 +166,28 @@ export class ReadBookPage implements OnInit, OnDestroy {
   }
 
   private getFavoriteStatus() {
-    this.bookService.checkFavoriteAsync({
-      userId: TokenService.getUserId() ?? '',
-      bookId: this.bookId?.toString() ?? ''
-    }).subscribe((res: any) => {
-      debugger
-      this.bookmarked = res.data;
-      this.cdr.detectChanges();
-    });
+    this.bookService
+      .checkFavoriteAsync({
+        userId: TokenService.getUserId() ?? '',
+        bookId: this.bookId?.toString() ?? '',
+      })
+      .subscribe((res: any) => {
+        debugger;
+        this.bookmarked = res.data;
+        this.cdr.detectChanges();
+      });
   }
 
-   toggleFavorite() {
-    this.bookService.toggleFavoritesAsync({
-      userId: TokenService.getUserId() ?? '',
-      bookId: this.bookId?.toString() ?? ''
-    }).subscribe(() => {
-      this.getFavoriteStatus();
-    });
+  toggleFavorite() {
+    this.bookService
+      .toggleFavoritesAsync({
+        userId: TokenService.getUserId() ?? '',
+        bookId: this.bookId?.toString() ?? '',
+      })
+      .subscribe(() => {
+        this.getFavoriteStatus();
+      });
   }
-
 
   ngAfterViewInit() {
     // load pdf.js once the view is ready
@@ -354,52 +356,128 @@ export class ReadBookPage implements OnInit, OnDestroy {
     }
 
     return new Promise<void>((resolve, reject) => {
-      // Use the ES modules version
-      const script = document.createElement('script');
-      script.type = 'module';
+      try {
+        // For mobile builds, use a more reliable loading approach
+        if (this.platform.is('capacitor') || this.platform.is('cordova')) {
+          this.loadPdfJsMobile().then(resolve).catch(reject);
+          return;
+        }
 
-      // Inline script to handle the module import
-      script.textContent = `
-        import * as pdfjsLib from '../../assets/pdf.min.mjs';
-        
-        // Set worker path
-        pdfjsLib.GlobalWorkerOptions.workerSrc = '../../assets/pdf.worker.mjs';
-        
-        // Expose to window for legacy code
-        window.pdfjsLib = pdfjsLib;
-        
-        // Dispatch event when loaded
-        window.dispatchEvent(new CustomEvent('pdfjsLoaded'));
-      `;
-
-      // Handle load event
-      const onLoad = () => {
-        // Add a small delay to ensure the module is fully initialized
-        setTimeout(() => {
-          if (
-            (window as any)['pdfjsLib'] &&
-            (window as any)['pdfjsLib'].getDocument
-          ) {
-            this.pdfjsLoaded = true;
-            console.log('PDF.js loaded successfully');
-            resolve();
-          } else {
-            reject(new Error('PDF.js API not available after load'));
+        // Web fallback - use CDN for better reliability
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.textContent = `
+          try {
+            // Try local assets first
+            let pdfjsLib;
+            try {
+              pdfjsLib = await import('./assets/pdf.min.mjs');
+            } catch (localError) {
+              console.warn('Local PDF.js failed, trying CDN:', localError);
+              // Fallback to CDN
+              pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.mjs');
+            }
+            
+            // Set worker path with fallbacks
+            try {
+              pdfjsLib.GlobalWorkerOptions.workerSrc = './assets/pdf.worker.mjs';
+            } catch (workerError) {
+              console.warn('Local worker failed, using CDN worker:', workerError);
+              pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            }
+            
+            // Expose to window
+            window.pdfjsLib = pdfjsLib;
+            window.dispatchEvent(new CustomEvent('pdfjsLoaded'));
+          } catch (error) {
+            console.error('PDF.js loading failed:', error);
+            window.dispatchEvent(new CustomEvent('pdfjsLoadError', { detail: error }));
           }
-        }, 100);
-      };
+        `;
 
-      // Handle errors
-      script.onerror = (error) => {
-        console.error('Failed to load PDF.js module:', error);
-        reject(new Error('Failed to load PDF viewer. Please try again.'));
-      };
+        // Handle successful load
+        const onLoad = () => {
+          setTimeout(() => {
+            if ((window as any)['pdfjsLib']?.getDocument) {
+              this.pdfjsLoaded = true;
+              console.log('PDF.js loaded successfully (web)');
+              resolve();
+            } else {
+              reject(new Error('PDF.js API not available after load'));
+            }
+          }, 100);
+        };
 
-      // Listen for our custom event
-      window.addEventListener('pdfjsLoaded', onLoad, { once: true });
+        // Handle errors
+        const onError = (event: any) => {
+          console.error('PDF.js loading error:', event.detail);
+          reject(
+            new Error(
+              'Failed to load PDF viewer. Please check your connection.'
+            )
+          );
+        };
 
-      // Add to document
-      document.head.appendChild(script);
+        script.onerror = () => {
+          reject(new Error('Failed to load PDF.js script'));
+        };
+
+        // Add event listeners
+        window.addEventListener('pdfjsLoaded', onLoad, { once: true });
+        window.addEventListener('pdfjsLoadError', onError, { once: true });
+
+        // Add script to document
+        document.head.appendChild(script);
+      } catch (error) {
+        console.error('PDF.js loader setup failed:', error);
+        reject(error);
+      }
+    });
+  }
+
+  // Mobile-specific PDF.js loading
+  private async loadPdfJsMobile(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      try {
+        // For mobile, use a simpler approach with better error handling
+        const script = document.createElement('script');
+        script.src =
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+
+        script.onload = () => {
+          try {
+            const pdfjsLib = (window as any).pdfjsLib;
+            if (pdfjsLib) {
+              // Set worker for mobile
+              pdfjsLib.GlobalWorkerOptions.workerSrc =
+                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+              // Disable some features that may cause issues on mobile
+              pdfjsLib.GlobalWorkerOptions.disableAutoFetch = true;
+              pdfjsLib.GlobalWorkerOptions.disableRange = true;
+
+              this.pdfjsLoaded = true;
+              console.log('PDF.js loaded successfully (mobile)');
+              resolve();
+            } else {
+              reject(new Error('PDF.js not available after mobile load'));
+            }
+          } catch (error) {
+            console.error('Mobile PDF.js setup error:', error);
+            reject(error);
+          }
+        };
+
+        script.onerror = (error) => {
+          console.error('Mobile PDF.js script load error:', error);
+          reject(new Error('Failed to load PDF.js on mobile'));
+        };
+
+        document.head.appendChild(script);
+      } catch (error) {
+        console.error('Mobile PDF.js loader setup failed:', error);
+        reject(error);
+      }
     });
   }
 
@@ -430,6 +508,7 @@ export class ReadBookPage implements OnInit, OnDestroy {
 
   async loadBook() {
     if (!this.bookId) return;
+
     const loading = await this.loadingCtrl.create({
       message: 'Loading book...',
       spinner: 'crescent',
@@ -452,6 +531,7 @@ export class ReadBookPage implements OnInit, OnDestroy {
       if (!response?.success || !response.data) {
         throw new Error('Failed to load book details');
       }
+
       this.book = response.data;
 
       // Get user ID
@@ -471,13 +551,15 @@ export class ReadBookPage implements OnInit, OnDestroy {
         await new Promise((resolve) => setTimeout(resolve, 300));
       }
 
-      // Load PDF content first
-      await this.loadPdf();
-      this.getFavoriteStatus();
-      // Now load reading progress after PDF is loaded
-      if (this.userId) {
-        await this.loadReadingProgress();
-      }
+      setTimeout(async () => {
+        this.loadBookPdf(this.bookId ?? '').then(async () => {
+          await this.loadPdf();
+          this.getFavoriteStatus();
+          if (this.userId) {
+            await this.loadReadingProgress();
+          }
+        });
+      }, 10);
     } catch (err) {
       console.error('Error in loadBook', err);
       this.showToast('Error loading book');
@@ -497,42 +579,109 @@ export class ReadBookPage implements OnInit, OnDestroy {
     return btoa(binary);
   }
 
-  
   async loadBookPdf(id: string) {
     this.isLoading = true;
     try {
-      const response = await fetch(`http://freeelib.runasp.net/api/Books/${id}/pdf`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${TokenService.getToken()}`
+      console.log('Loading PDF for book ID:', id);
+
+      const token = TokenService.getToken();
+      if (!token) {
+        throw new Error('No authentication token available');
+      }
+
+      // Add timeout for mobile networks
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+
+      const response = await fetch(
+        `http://freeelib.runasp.net/api/Books/${id}/pdf`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/pdf',
+            'Cache-Control': 'no-cache',
+          },
+          signal: controller.signal,
         }
-      });
-  
+      );
+
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error(`Failed with status ${response.status}`);
+        let errorMessage = `HTTP ${response.status}`;
+        if (response.status === 401) {
+          errorMessage = 'Authentication failed. Please log in again.';
+        } else if (response.status === 404) {
+          errorMessage = 'PDF not found for this book.';
+        } else if (response.status === 500) {
+          errorMessage = 'Server error. Please try again later.';
+        }
+        throw new Error(errorMessage);
       }
+
+      // Check content type
+      const contentType = response.headers.get('content-type');
+      if (contentType && !contentType.includes('application/pdf')) {
+        console.warn('Unexpected content type:', contentType);
+      }
+
       const arrayBuffer = await response.arrayBuffer();
-      let pdfBytes = new Uint8Array(arrayBuffer);
-      let paddedBuffer: ArrayBuffer;
-  
-      if (pdfBytes.byteLength % 4 !== 0) {
-        const paddedLength = Math.ceil(pdfBytes.byteLength / 4) * 4;
-        const padded = new Uint8Array(paddedLength);
-        padded.set(pdfBytes);
-        paddedBuffer = padded.buffer;
-      } else {
-        paddedBuffer = pdfBytes.buffer;
+
+      if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+        throw new Error('Empty PDF response');
       }
-      const pdfUint32 = new Uint32Array(paddedBuffer);
-      this.pdfFile = pdfUint32; 
-    } catch (error) {
-      console.error('Error streaming PDF:', error);
+
+      console.log('PDF downloaded, size:', arrayBuffer.byteLength, 'bytes');
+
+      let pdfBytes = new Uint8Array(arrayBuffer);
+
+      // Validate PDF header
+      const header = new TextDecoder().decode(pdfBytes.slice(0, 5));
+      if (!header.startsWith('%PDF')) {
+        console.error('Invalid PDF header:', header);
+        throw new Error('Downloaded file is not a valid PDF');
+      }
+
+      // For mobile, we'll use the raw bytes directly instead of padding
+      if (this.platform.is('capacitor') || this.platform.is('cordova')) {
+        this.pdfFile = new Uint32Array(pdfBytes);
+        console.log('PDF loaded for mobile (Uint8Array)');
+      } else {
+        // Web version - use padding approach
+        let paddedBuffer: ArrayBuffer;
+        if (pdfBytes.byteLength % 4 !== 0) {
+          const paddedLength = Math.ceil(pdfBytes.byteLength / 4) * 4;
+          const padded = new Uint8Array(paddedLength);
+          padded.set(pdfBytes);
+          paddedBuffer = padded.buffer;
+        } else {
+          paddedBuffer = pdfBytes.buffer;
+        }
+        const pdfUint32 = new Uint32Array(paddedBuffer);
+        this.pdfFile = pdfUint32;
+        console.log('PDF loaded for web (Uint32Array)');
+      }
+    } catch (error: any) {
+      console.error('Error loading PDF:', error);
+
+      let errorMessage = 'Failed to load PDF';
+      if (error.name === 'AbortError') {
+        errorMessage = 'PDF download timed out. Please check your connection.';
+      } else if (error.message?.includes('Authentication')) {
+        errorMessage = 'Please log in again to access this book.';
+      } else if (error.message?.includes('not found')) {
+        errorMessage = "This book's PDF is not available.";
+      } else if (error.message?.includes('Network')) {
+        errorMessage = 'Network error. Please check your connection.';
+      }
+
+      this.showToast(errorMessage);
+      throw error;
     } finally {
       this.isLoading = false;
     }
   }
-  
-
 
   async loadPdf(): Promise<void> {
     if (!this.pdfFile) {
@@ -553,7 +702,7 @@ export class ReadBookPage implements OnInit, OnDestroy {
     }
 
     try {
-      // Prepare pdf data (base64 or ArrayBuffer/Uint8Array)
+      // Prepare pdf data with better mobile handling
       let pdfData: Uint8Array;
       const content = this.pdfFile;
 
@@ -561,34 +710,79 @@ export class ReadBookPage implements OnInit, OnDestroy {
         // handle potential data URL
         let base64 = content;
         if (base64.includes(',')) base64 = base64.split(',')[1];
-        const binary = atob(base64);
-        const arr = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
-        pdfData = arr;
+        try {
+          const binary = atob(base64);
+          const arr = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+          pdfData = arr;
+        } catch (decodeError) {
+          console.error('Base64 decode error:', decodeError);
+          throw new Error('Invalid PDF data format');
+        }
       } else if (content instanceof ArrayBuffer) {
         pdfData = new Uint8Array(content);
       } else if (content instanceof Uint8Array) {
         pdfData = content;
       } else if (content instanceof Uint32Array) {
-        const buffer = content.buffer.slice(content.byteOffset, content.byteOffset + content.byteLength);
-        pdfData = new Uint8Array(buffer);
+        try {
+          const buffer = content.buffer.slice(
+            content.byteOffset,
+            content.byteOffset + content.byteLength
+          );
+          pdfData = new Uint8Array(buffer);
+        } catch (bufferError) {
+          console.error('Buffer conversion error:', bufferError);
+          throw new Error('Failed to convert PDF buffer');
+        }
       } else {
+        console.error('Unsupported PDF format:', typeof content);
         throw new Error('Unsupported PDF format');
       }
 
-      // use pdfjs from window
-      const pdfjs = (window as any).pdfjsLib;
-      if (!pdfjs) throw new Error('pdfjsLib not loaded');
+      // Validate PDF data
+      if (!pdfData || pdfData.length === 0) {
+        throw new Error('Empty PDF data');
+      }
 
-      const loadingTask = pdfjs.getDocument({
+      // Check for PDF header
+      const header = new TextDecoder().decode(pdfData.slice(0, 5));
+      if (!header.startsWith('%PDF')) {
+        console.warn('Invalid PDF header:', header);
+        throw new Error('Invalid PDF file format');
+      }
+
+      // Get pdfjs from window
+      const pdfjs = (window as any).pdfjsLib;
+      if (!pdfjs) {
+        throw new Error('PDF.js library not loaded');
+      }
+
+      // Mobile-optimized loading options
+      const loadingOptions: any = {
         data: pdfData,
         cMapUrl: `https://unpkg.com/pdfjs-dist@${this.workerVersion}/cmaps/`,
         cMapPacked: true,
-        disableAutoFetch: false,
-        disableRange: false,
-        useWorkerFetch: true,
-      });
+        standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${this.workerVersion}/standard_fonts/`,
+      };
 
+      // Adjust options for mobile
+      if (this.platform.is('capacitor') || this.platform.is('cordova')) {
+        loadingOptions.disableAutoFetch = true;
+        loadingOptions.disableRange = true;
+        loadingOptions.useWorkerFetch = false;
+        loadingOptions.isEvalSupported = false;
+        loadingOptions.maxImageSize = 1024 * 1024; // 1MB max image size
+      } else {
+        loadingOptions.disableAutoFetch = false;
+        loadingOptions.disableRange = false;
+        loadingOptions.useWorkerFetch = true;
+      }
+
+      console.log('Loading PDF with options:', loadingOptions);
+
+      const loadingTask = pdfjs.getDocument(loadingOptions);
+
+      // Progress tracking
       loadingTask.onProgress = (p: { loaded: number; total?: number }) => {
         if (p.total) {
           const percent = Math.round((p.loaded / p.total) * 100);
@@ -596,12 +790,30 @@ export class ReadBookPage implements OnInit, OnDestroy {
         }
       };
 
-      this.pdfDoc = await loadingTask.promise;
-      this.totalPages = this.pdfDoc.numPages || 0;
-      console.log('PDF loaded pages:', this.totalPages);
+      // Add timeout for mobile
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(
+            new Error('PDF loading timeout - please check your connection')
+          );
+        }, 30000); // 30 second timeout
+      });
 
-      // For single-page PDFs, ensure we render the page
-      if (this.totalPages === 1) {
+      this.pdfDoc = await Promise.race([loadingTask.promise, timeoutPromise]);
+
+      if (!this.pdfDoc) {
+        throw new Error('Failed to load PDF document');
+      }
+
+      this.totalPages = this.pdfDoc.numPages || 0;
+      console.log('PDF loaded successfully - pages:', this.totalPages);
+
+      if (this.totalPages === 0) {
+        throw new Error('PDF has no pages');
+      }
+
+      // For single-page PDFs or initial load, render first page
+      if (this.totalPages === 1 || this.currentPage <= 1) {
         this.currentPage = 1;
         await this.renderPage(1);
       }
@@ -610,17 +822,32 @@ export class ReadBookPage implements OnInit, OnDestroy {
       if (!this.progressCleanup) {
         this.progressCleanup = this.setupProgressTracking();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error loading PDF:', err);
-      this.showToast('Failed to load PDF');
-      // cleanup pdfDoc if something went wrong
+
+      // Provide specific error messages
+      let errorMessage = 'Failed to load PDF';
+      if (err.message?.includes('timeout')) {
+        errorMessage = 'PDF loading timed out. Please check your connection.';
+      } else if (err.message?.includes('Invalid PDF')) {
+        errorMessage = 'Invalid PDF file format';
+      } else if (err.message?.includes('not loaded')) {
+        errorMessage = 'PDF viewer not initialized. Please refresh the page.';
+      }
+
+      this.showToast(errorMessage);
+
+      // Cleanup on error
       if (this.pdfDoc) {
         try {
           await this.pdfDoc.cleanup();
           await this.pdfDoc.destroy();
-        } catch (e) {}
+        } catch (cleanupError) {
+          console.warn('Cleanup error:', cleanupError);
+        }
         this.pdfDoc = null;
       }
+
       throw err;
     } finally {
       this.isLoading = false;
