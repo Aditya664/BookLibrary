@@ -101,7 +101,7 @@ export class ReadBookPage implements OnInit, OnDestroy {
   // store cleanup functions
   private pdfjsLoaded = false;
   private workerVersion = '5.4.54'; // change if you change CDN version
-  pdfFile: string | Uint32Array = '';
+  pdfFile: string | Uint32Array | Uint8Array = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -551,15 +551,15 @@ export class ReadBookPage implements OnInit, OnDestroy {
         await new Promise((resolve) => setTimeout(resolve, 300));
       }
 
-      setTimeout(async () => {
-        this.loadBookPdf(this.bookId ?? '').then(async () => {
-          await this.loadPdf();
-          this.getFavoriteStatus();
-          if (this.userId) {
-            await this.loadReadingProgress();
-          }
-        });
-      }, 10);
+      // Load PDF content first
+      await this.loadBookPdf(this.bookId ?? '');
+      await this.loadPdf();
+      this.getFavoriteStatus();
+      
+      // Now load reading progress after PDF is loaded
+      if (this.userId) {
+        await this.loadReadingProgress();
+      }
     } catch (err) {
       console.error('Error in loadBook', err);
       this.showToast('Error loading book');
@@ -645,7 +645,7 @@ export class ReadBookPage implements OnInit, OnDestroy {
 
       // For mobile, we'll use the raw bytes directly instead of padding
       if (this.platform.is('capacitor') || this.platform.is('cordova')) {
-        this.pdfFile = new Uint32Array(pdfBytes);
+        this.pdfFile = pdfBytes;
         console.log('PDF loaded for mobile (Uint8Array)');
       } else {
         // Web version - use padding approach
